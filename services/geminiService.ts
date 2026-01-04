@@ -38,36 +38,33 @@ export interface FundPerformanceResponse {
 export const fetchFundPerformance = async (query: string): Promise<FundPerformanceResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
+    // Fix: Removed responseMimeType and responseSchema because they are incompatible with search grounding.
+    // Updated prompt to request structured JSON for manual extraction.
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: `Recupera i dati ufficiali COVIP per il seguente fondo pensione o società: "${query}". 
-      Mi servono: 
-      1. Rendimento netto 2024 (y1)
-      2. Media annua 5 anni (y5)
-      3. Media annua 10 anni (y10)
-      4. Tipologia (PIP o FPA)
-      5. Categoria (AZIONARIO, BILANCIATO, PRUDENTE_OBB, GARANTITO).
-      Usa solo fonti ufficiali (COVIP, Morningstar, Sole 24 Ore).`,
+      Mi servono i seguenti dati in formato JSON:
+      {
+        "company": string,
+        "name": string,
+        "type": "FPA" | "PIP",
+        "category": "AZIONARIO" | "BILANCIATO" | "PRUDENTE_OBB" | "GARANTITO",
+        "y1": number,
+        "y5": number,
+        "y10": number
+      }
+      Usa solo fonti ufficiali (COVIP, Morningstar, Sole 24 Ore). Restituisci esclusivamente il blocco JSON senza altro testo.`,
       config: {
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            company: { type: Type.STRING },
-            name: { type: Type.STRING },
-            type: { type: Type.STRING, enum: ['FPA', 'PIP'] },
-            category: { type: Type.STRING, enum: ['AZIONARIO', 'BILANCIATO', 'PRUDENTE_OBB', 'GARANTITO'] },
-            y1: { type: Type.NUMBER },
-            y5: { type: Type.NUMBER },
-            y10: { type: Type.NUMBER }
-          },
-          required: ['company', 'name', 'type', 'category', 'y1']
-        }
+        tools: [{ googleSearch: {} }]
       }
     });
 
-    const data = JSON.parse(response.text || "{}");
+    // Fix: Extract JSON from potentially conversational response text
+    const text = response.text || "";
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    
+    // Fix: Extract grounding sources as required by mandatory guidelines
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
     
@@ -90,32 +87,27 @@ export interface HistoricalReturnsResponse {
 export const fetchHistoricalReturns = async (query: string): Promise<HistoricalReturnsResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
+    // Fix: Added googleSearch tool to fetchHistoricalReturns for real-time market accuracy.
+    // Removed JSON mode to prevent grounding metadata from causing parsing errors.
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: `Analizza e recupera i rendimenti percentuali annuali (Total Return) dal 2000 al 2024 per lo strumento finanziario o indice: "${query}". 
-      I dati devono essere storicamente accurati. Consulta il tuo database interno di dati finanziari (Morningstar, Bloomberg).
-      Restituisci esclusivamente un oggetto JSON con gli anni come chiavi e i rendimenti come valori numerici.`,
+      I dati devono essere storicamente accurati. Consulta il tuo database interno e fonti finanziarie web.
+      Restituisci esclusivamente un oggetto JSON con gli anni come chiavi e i rendimenti come valori numerici.
+      Esempio: {"2000": 5.2, "2001": -3.5, ...}`,
       config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            "2000": { type: Type.NUMBER }, "2001": { type: Type.NUMBER }, "2002": { type: Type.NUMBER },
-            "2003": { type: Type.NUMBER }, "2004": { type: Type.NUMBER }, "2005": { type: Type.NUMBER },
-            "2006": { type: Type.NUMBER }, "2007": { type: Type.NUMBER }, "2008": { type: Type.NUMBER },
-            "2009": { type: Type.NUMBER }, "2010": { type: Type.NUMBER }, "2011": { type: Type.NUMBER },
-            "2012": { type: Type.NUMBER }, "2013": { type: Type.NUMBER }, "2014": { type: Type.NUMBER },
-            "2015": { type: Type.NUMBER }, "2016": { type: Type.NUMBER }, "2017": { type: Type.NUMBER },
-            "2018": { type: Type.NUMBER }, "2019": { type: Type.NUMBER }, "2020": { type: Type.NUMBER },
-            "2021": { type: Type.NUMBER }, "2022": { type: Type.NUMBER }, "2023": { type: Type.NUMBER },
-            "2024": { type: Type.NUMBER }
-          }
-        }
+        tools: [{ googleSearch: {} }]
       }
     });
 
-    const data = JSON.parse(response.text || "{}");
-    const sources: Array<{ title: string; uri: string }> = [];
+    // Fix: Extract JSON block from response text
+    const text = response.text || "";
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    
+    // Fix: Mandatory grounding sources extraction
+    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+    const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
     
     return { data, sources };
   } catch (error) {

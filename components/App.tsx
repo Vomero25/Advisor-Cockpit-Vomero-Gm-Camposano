@@ -31,6 +31,7 @@ import CovipAnalytics2024View from './CovipAnalytics2024View';
 import CovipIntelligence2024View from './CovipIntelligence2024View';
 import MethodologyView from './MethodologyView';
 import RitaSimulatorView from './RitaSimulatorView';
+import ExtraDeductibilityView from './ExtraDeductibilityView';
 import { PageView } from '../types';
 import { Menu } from 'lucide-react';
 
@@ -100,6 +101,8 @@ const App: React.FC = () => {
         return <PensionGeographyView />;
       case PageView.METHODOLOGY:
         return <MethodologyView />;
+      case PageView.EXTRA_DEDUCTIBILITY:
+        return <ExtraDeductibilityView />;
       default:
         return <Dashboard onChangeView={setCurrentView} />;
     }

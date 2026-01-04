@@ -83,6 +83,15 @@ const ComparatoreView: React.FC = () => {
     setActiveCompany('TUTTE');
   };
 
+  // Fix: Aggregate all grounding sources from AI-discovered products for mandatory display
+  const allAiSources = useMemo(() => {
+    const sourcesMap = new Map();
+    aiProducts.forEach(p => {
+      p.sources?.forEach(s => sourcesMap.set(s.uri, s));
+    });
+    return Array.from(sourcesMap.values());
+  }, [aiProducts]);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-20">
       
@@ -284,6 +293,28 @@ const ComparatoreView: React.FC = () => {
             </table>
          </div>
       </div>
+
+      {/* Fix: Display mandatory grounding sources for AI search results */}
+      {allAiSources.length > 0 && (
+         <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm animate-fade-in">
+            <h4 className="text-xs font-black uppercase tracking-widest text-indigo-900 mb-4 flex items-center gap-2">
+               <LinkIcon size={14} /> Fonti Grounding AI (Rendimenti Verificati)
+            </h4>
+            <div className="flex flex-wrap gap-3">
+               {allAiSources.map((source, idx) => (
+                  <a 
+                     key={idx} 
+                     href={source.uri} 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2"
+                  >
+                     {source.title} <ExternalLink size={12} />
+                  </a>
+               ))}
+            </div>
+         </div>
+      )}
 
       {/* ALERT STRATEGICO */}
       {filteredProducts.length === 0 && !isAiLoading && (
