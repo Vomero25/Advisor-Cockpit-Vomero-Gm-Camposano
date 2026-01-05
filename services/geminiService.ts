@@ -16,7 +16,7 @@ export const generateAssistantResponse = async (userMessage: string): Promise<st
     return response.text || "Mi dispiace, non sono riuscito a elaborare una risposta.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Errore nel servizio di consulenza.";
+    return "Errore nel servizio di consulenza. Verifica la connessione o la configurazione della chiave API.";
   }
 };
 
@@ -30,6 +30,7 @@ export interface FundPerformanceResponse {
   y5: number;
   y10: number;
   sources: Array<{ title: string; uri: string }>;
+  rawText?: string;
 }
 
 export const fetchFundPerformance = async (query: string): Promise<FundPerformanceResponse> => {
@@ -37,26 +38,28 @@ export const fetchFundPerformance = async (query: string): Promise<FundPerforman
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: `Recupera i dati ufficiali COVIP per il seguente fondo pensione o società: "${query}". 
-      Mi servono i seguenti dati in formato JSON:
-      {
-        "company": string,
-        "name": string,
-        "type": "FPA" | "PIP",
-        "category": "AZIONARIO" | "BILANCIATO" | "PRUDENTE_OBB" | "GARANTITO",
-        "y1": number,
-        "y5": number,
-        "y10": number
-      }
-      Usa solo fonti ufficiali (COVIP, Morningstar, Sole 24 Ore). Restituisci esclusivamente il blocco JSON senza altro testo.`,
+      contents: `Recupera i dati ufficiali COVIP aggiornati al 2024 per il fondo pensione: "${query}". 
+      Fornisci i rendimenti netti (1 anno, 5 anni, 10 anni).
+      Tenta di formattare i dati finali in questo modo JSON alla fine del testo:
+      {"company": "Nome", "name": "Fondo", "type": "FPA", "category": "AZIONARIO", "y1": 10.5, "y5": 5.2, "y10": 4.8}`,
       config: {
         tools: [{ googleSearch: {} }]
       }
     });
 
     const text = response.text || "";
+    let data = { company: 'AI Search', name: query, type: 'FPA' as const, category: 'AZIONARIO' as const, y1: 0, y5: 0, y10: 0 };
+    
+    // Tenta di estrarre JSON se presente, altrimenti usa il testo
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        data = { ...data, ...parsed };
+      } catch (e) {
+        console.warn("Could not parse JSON from search result");
+      }
+    }
     
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
@@ -64,7 +67,8 @@ export const fetchFundPerformance = async (query: string): Promise<FundPerforman
     return {
       id: `AI_${Date.now()}`,
       ...data,
-      sources
+      sources,
+      rawText: text
     };
   } catch (error) {
     console.error("AI Search Error:", error);
@@ -75,6 +79,7 @@ export const fetchFundPerformance = async (query: string): Promise<FundPerforman
 export interface HistoricalReturnsResponse {
   data: Record<number, number>;
   sources: Array<{ title: string; uri: string }>;
+  explanation?: string;
 }
 
 export const fetchHistoricalReturns = async (query: string): Promise<HistoricalReturnsResponse> => {
@@ -82,10 +87,8 @@ export const fetchHistoricalReturns = async (query: string): Promise<HistoricalR
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: `Analizza e recupera i rendimenti percentuali annuali (Total Return) dal 2000 al 2024 per lo strumento finanziario o indice: "${query}". 
-      I dati devono essere storicamente accurati. Consulta il tuo database interno e fonti finanziarie web.
-      Restituisci esclusivamente un oggetto JSON con gli anni come chiavi e i rendimenti come valori numerici.
-      Esempio: {"2000": 5.2, "2001": -3.5, ...}`,
+      contents: `Recupera i rendimenti annuali dal 2000 al 2024 per: "${query}". 
+      Restituisci i dati in un oggetto JSON finale: {"2024": 5.5, "2023": -2.1, ...}`,
       config: {
         tools: [{ googleSearch: {} }]
       }
@@ -98,9 +101,9 @@ export const fetchHistoricalReturns = async (query: string): Promise<HistoricalR
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
     
-    return { data, sources };
+    return { data, sources, explanation: text };
   } catch (error) {
-    console.error("Error fetching certified data:", error);
+    console.error("Error fetching historical data:", error);
     throw error;
   }
 };
