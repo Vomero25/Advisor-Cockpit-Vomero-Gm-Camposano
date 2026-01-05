@@ -28,7 +28,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center gap-3">
               <div className="bg-amber-50 p-2 rounded-xl shadow-lg"><Landmark size={24} className="text-slate-900" /></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 italic">Vomero Elite Advisory - 2025</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 italic">Vomero Elite Advisory 2026</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter leading-none uppercase">
               Gruppo Vomero <span className="text-amber-500">MasterKit</span>
@@ -47,9 +47,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
           </div>
           <div className="lg:col-span-4 bg-white/5 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 text-center relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
-             <p className="text-[10px] font-black uppercase text-amber-500 mb-2 tracking-widest">Asset Management</p>
-             <p className="text-6xl font-black text-white">4.2</p>
-             <p className="text-[10px] text-slate-400 font-bold uppercase mt-4 italic">Versione Advisor Pro</p>
+             <p className="text-[10px] font-black uppercase text-amber-500 mb-2 tracking-widest italic">Status Piattaforma</p>
+             <p className="text-6xl font-black text-white italic tracking-tighter uppercase">Beta</p>
+             <div className="mt-4 space-y-1">
+                <p className="text-[10px] text-slate-400 font-bold uppercase italic">Versione Advisor Pro</p>
+                <p className="text-[9px] text-amber-500/70 font-black uppercase tracking-widest">Sviluppatore: Raffaele Camposano</p>
+             </div>
           </div>
         </div>
         <div className="absolute right-0 top-0 h-full w-1/3 bg-white opacity-5 transform skew-x-12 pointer-events-none"></div>

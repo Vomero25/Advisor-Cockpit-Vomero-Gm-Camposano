@@ -125,9 +125,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
           ))}
         </nav>
 
-        <div className="p-6 border-t border-slate-800 bg-[#070b14]">
+        <div className="p-6 border-t border-slate-800 bg-[#070b14] space-y-4">
           <div className="bg-slate-900 rounded-2xl p-4 text-[10px] text-slate-500 font-bold border border-slate-800/50 italic leading-relaxed">
             "La protezione è il contratto che trasforma un rischio in una certezza finanziaria."
+          </div>
+          <div className="px-2">
+            <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest text-center">Sviluppatore: Raffaele Camposano</p>
           </div>
         </div>
       </div>
