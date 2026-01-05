@@ -1,4 +1,5 @@
 
+
 export enum PageView {
   DASHBOARD = 'DASHBOARD',
   INTERVIEW = 'INTERVIEW', 
@@ -35,7 +36,12 @@ export enum PageView {
   ZURICH_SMART_PROTECTION = 'ZURICH_SMART_PROTECTION',
   ANIMA_ANALYSIS = 'ANIMA_ANALYSIS',
   NORMATIVA = 'NORMATIVA',
-  EXTRA_DEDUCTIBILITY = 'EXTRA_DEDUCTIBILITY'
+  EXTRA_DEDUCTIBILITY = 'EXTRA_DEDUCTIBILITY',
+  ZURICH_SPAZIO_PREVIDENZA = 'ZURICH_SPAZIO_PREVIDENZA',
+  /* Added to fix error: Property 'FISCAL_ARBITRAGE' does not exist on type 'typeof PageView' */
+  FISCAL_ARBITRAGE = 'FISCAL_ARBITRAGE',
+  /* Added to fix error: Property 'REGULATIONS_FONDI' does not exist on type 'typeof PageView' */
+  REGULATIONS_FONDI = 'REGULATIONS_FONDI'
 }
 
 export interface CovipProduct {

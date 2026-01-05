@@ -52,9 +52,8 @@ export const LTC_DATA = {
 };
 
 export const LTC_MARKET_INSIGHTS = {
-  COST_RSA_NORTH: 3500,
-  COST_RSA_SOUTH: 2200,
-  CAREGIVERS_TOTAL: 7000000
+  RSA_COSTS: { NORTH: 3500, SOUTH: 2500 },
+  CAREGIVERS_ITALY: 7000000
 };
 
 export const SUCCESSION_DATA = {
@@ -109,6 +108,45 @@ export const ZURICH_PRODUCT_DATA = {
   COSTS: { loading_recurring: '3,00%' }
 };
 
+export const ZURICH_REGULATION_DATA = [
+  { art: 'Art. 2', content: 'Prestazione in caso di decesso dell\'Aderente prima del pensionamento.', category: 'PRESTAZIONI' },
+  { art: 'Art. 11', content: 'Tassazione agevolata sulle prestazioni pensionistiche (15% - 9%).', category: 'FISCALITÀ' },
+  { art: 'Art. 12', content: 'Esenzione totale dall\'imposta di successione per i beneficiari.', category: 'SUCCESSIONE' },
+  { art: 'Art. 1923', content: 'Impignorabilità e insequestrabilità delle somme dovute dall\'assicuratore.', category: 'PROTEZIONE' }
+];
+
+export const ZURICH_REMUNERATION_DATA = {
+  EDITION: '10/2025',
+  SALES_PAYOUT: [
+    { tier: '0 - 4 Mln', rate: 0.60 },
+    { tier: '4 - 6.5 Mln', rate: 0.60 },
+    { tier: '6.5 - 10 Mln', rate: 0.62 },
+    { tier: '10 - 20 Mln', rate: 0.65 },
+    { tier: 'Oltre 20 Mln', rate: 0.70 }
+  ],
+  MANAGEMENT_PAYOUT: [
+    { rate: 0.45 },
+    { rate: 0.45 },
+    { rate: 0.45 },
+    { rate: 0.45 },
+    { rate: 0.45 }
+  ],
+  RETROCESSIONS_ZB: {
+    RECURRING_WITH_LTC: 0.03,
+    RECURRING_NO_LTC: 0.02,
+    ADDITIONAL: 0.02,
+    TRANSFER_TFR: 0.02
+  }
+};
+
+export const ZURICH_MULTINVEST_DATA = {
+  FEE_STRUCTURE: {
+    A: { label: 'Classe A', gs: 0.012, line: 0.018, min: 50000 },
+    B: { label: 'Classe B', gs: 0.010, line: 0.015, min: 250000 },
+    C: { label: 'Classe C', gs: 0.008, line: 0.012, min: 500000 }
+  }
+};
+
 export const ANIMA_PRODUCT_DATA = {
   FUNDS_DETAILS: [
     { id: 'A_C25', name: 'Arti & Mestieri - Crescita 25+', strategy: 'Equity Focus', risk: 'Alto', cost: '1,35%', perf2024: '+13,66%', returns: { y3: '+4,80%', y5: '+6,79%', y10: '+6,00%' }, composition: { equity: 90, debt: 10 } },
@@ -121,82 +159,110 @@ export const ANIMA_PRODUCT_DATA = {
   COSTS: { entry: '0 €', annual: '10 €', rita: '30 €', switch: '0 €', transfer: '0 €', loading: '0%' }
 };
 
-export const ZURICH_REGULATION_DATA = [
-  { art: 'Art. 2', category: 'PRESTAZIONI', content: 'Decesso prima del pensionamento: maggiorazione 1% capitale.' },
-  { art: 'Art. 11', category: 'FISCALE', content: 'Tassazione 15% ridotta fino al 9% dopo 35 anni.' },
-  { art: 'Art. 22', category: 'RENDITE', content: 'Opzione F: Raddoppio rendita in caso di perdita autosufficienza (ADL).' }
-];
-
-export const REGULATIONS: RegulationItem[] = [
-  { id: '1', title: 'D.Lgs. 252/05', category: 'DECRETO', content: 'La norma fondamentale sulla previdenza complementare in Italia.', reference: 'D.Lgs. 252/2005' },
-  { id: '2', title: 'Circolare AdE 19/E 2024', category: 'CIRCOLARE', content: 'Chiarimenti sulla tassazione delle polizze vita e successione.', reference: 'Circolare 19/E', date: '2024' }
-];
-
-export const ZURICH_REMUNERATION_DATA = {
-  EDITION: '2025.1',
-  SALES_PAYOUT: [{ tier: '< 10M', rate: 0.70 }, { tier: '> 50M', rate: 0.875 }],
-  MANAGEMENT_PAYOUT: [{ tier: '< 10M', rate: 0.40 }, { tier: '> 50M', rate: 0.55 }],
-  RETROCESSIONS_ZB: { RECURRING_WITH_LTC: 0.04, RECURRING_NO_LTC: 0.035, ADDITIONAL: 0.02, TRANSFER_TFR: 0.01 }
+export const ZURICH_SMART_CONSTANTS = {
+  TARGET_ADVISORY: [
+    { title: 'Genitori / Famiglie', hook: 'Proteggi il futuro dei tuoi figli', need: 'Capitale per decesso' },
+    { title: 'Professionisti', hook: 'Il valore del tuo tempo e fisico', need: 'Indennizzo per lesioni' },
+    { title: 'Adulti & Senior', hook: 'Tutela il patrimonio investito', need: 'Liquidità per successione' }
+  ],
+  PRICING_TABLE_100K: {
+    NON_SMOKER: [
+      { age: 30, y5: 182, y10: 191, y15: 203, y20: 225 },
+      { age: 40, y5: 238, y10: 267, y15: 302, y20: 361 },
+      { age: 50, y5: 395, y10: 479, y15: 571, y20: 723 },
+      { age: 60, y5: 896, y10: 1129, y15: 1376, y20: 0 },
+      { age: 70, y5: 2100, y10: 0, y15: 0, y20: 0 }
+    ],
+    SMOKER: [
+      { age: 30, y5: 216, y10: 231, y15: 252, y20: 289 },
+      { age: 40, y5: 312, y10: 364, y15: 422, y20: 523 },
+      { age: 50, y5: 585, y10: 726, y15: 883, y20: 1140 },
+      { age: 60, y5: 1447, y10: 1843, y15: 2253, y20: 0 }
+    ]
+  },
+  INJURIES: [
+    { name: 'Frattura scomposta massiccio facciale', level: 1, amount: 2500, category: 'SCHELETRICO' },
+    { name: 'Trauma cranico commotivo con lesione', level: 1, amount: 2500, category: 'SCHELETRICO' },
+    { name: 'Frattura corpo vertebra cervicale', level: 1, amount: 2500, category: 'COLONNA' },
+    { name: 'Frattura femore', level: 1, amount: 2500, category: 'FEMORE' },
+    { name: 'Frattura gomito scomposta', level: 1, amount: 2500, category: 'ARTO SUPERIORE' },
+    { name: 'Frattura femore con protesi d’anca', level: 2, amount: 7500, category: 'FEMORE' },
+    { name: 'Sordità unilaterale non protesizzabile', level: 2, amount: 7500, category: 'SENSITIVO' },
+    { name: 'Perdita anatomica globo oculare', level: 3, amount: 15000, category: 'SENSITIVO' },
+    { name: 'Amputazione piede dalla linea metatarsale', level: 3, amount: 15000, category: 'AMPUTAZIONI' },
+    { name: 'Cecità completa', level: 4, amount: 25000, category: 'SENSITIVO' },
+    { name: 'Sordità bilaterale non protesizzabile', level: 4, amount: 25000, category: 'SENSITIVO' },
+    { name: 'Amputazione mano o tutte le dita', level: 4, amount: 25000, category: 'AMPUTAZIONI' },
+    { name: 'Amputazione arto superiore al terzo prossimale', level: 4, amount: 25000, category: 'AMPUTAZIONI' }
+  ],
+  EXCLUSIONS: {
+    TCM_SPECIFIC: [
+      { title: 'Dolo del contraente/assicurato', desc: 'Esclusi atti volontari volti a frodare la compagnia.' },
+      { title: 'Suicidio (primi 2 anni)', desc: 'Copertura sospesa per suicidio nei primi 24 mesi di polizza.' },
+      { title: 'Uso stupefacenti / Alcolismo', desc: 'Eventi causati da abuso cronico o acuto di sostanze.' }
+    ],
+    GENERAL: [
+      { title: 'Guerra e Terrorismo', desc: 'Eventi bellici o insurrezioni popolari.' },
+      { title: 'Armi nucleari', desc: 'Radiazioni provocate da fissione nucleare.' },
+      { title: 'Guida senza patente', desc: 'Assenza di abilitazione legale alla guida.' }
+    ],
+    SPORTS: ['Pugilato', 'Paracadutismo', 'Speleologia', 'Rugby Professionale', 'Motociclismo Agonistico', 'Attività Subacquee > 40m', 'Alpinismo > 4000m']
+  }
 };
 
-export const ZURICH_MULTINVEST_DATA = {
-  FEE_STRUCTURE: {
-    A: { label: "Classe A", min: 50000, gs: 0.015, line: 0.025 },
-    B: { label: "Classe B", min: 10000, gs: 0.018, line: 0.028 },
-    C: { label: "Classe C", min: 0, gs: 0.02, line: 0.03 }
+export const ZURICH_SMART_TECHNICAL_DATA = {
+  ACCUMULATION_LIMITS: [
+    { maxAge: 45, limit: 400000 },
+    { maxAge: 55, limit: 300000 },
+    { maxAge: 99, limit: 200000 }
+  ],
+  WAITING_PERIOD: {
+    EXCEPTIONS_DISEASES: ['Tifo', 'Colera', 'Meningite', 'Infarto', 'Shock anafilattico', 'Peste', 'Vaiolo', 'Tubercolosi']
+  }
+};
+
+export const ZURICH_SMART_COMMISSION_DATA = {
+  FIXED_PRACTICE_COST: 40,
+  PAYIN_RATES: {
+    DUR_5Y: 0.40,
+    DUR_10_15_20Y: 0.80,
+    RECURRING_AFTER_Y1: 0.10
+  },
+  FIXED_PAYOUT: {
+    NEW_BUSINESS: 0.875,
+    RECURRING: 0.50
   }
 };
 
 export const ASSET_PROTECTION_DATA = {
   STRESS_TEST_SCENARIOS: {
-    CIVILE_PROF: { 
-      title: "Responsabilità Civile / Prof.", 
-      legal_ref: "Art. 1923 c.c.", 
-      bank: 0, 
-      policy_standard: 50, 
-      policy_90gs: 90, 
-      pip: 100, 
-      impact: "ALTO", 
-      hook: "Dottore, i premi in polizza sono protetti per legge da creditori e pignoramenti.", 
-      case_history: "Amministratore pignorato ha salvato il fondo perché considerato mezzo di sussistenza.",
-      legal_deep: "L'impignorabilità delle polizze vita è sancita dall'Art. 1923 del Codice Civile."
-    }
+    CIVILE_PROF: { title: 'Resp. Civile Professionale', impact: 'ALTO', legal_ref: 'Art. 2236 c.c.', bank: 0, policy_standard: 80, policy_90gs: 95, pip: 100, hook: 'Un errore tecnico o medico può bloccare i conti per anni. Il fondo resta intoccabile.' },
+    CULPA_VIGILANDO: { title: 'Culpa in Vigilando/Educando', impact: 'ELEVATO', legal_ref: 'Art. 2047-48 c.c.', bank: 0, policy_standard: 70, policy_90gs: 90, pip: 100, hook: 'Danni causati da figli minori o collaboratori? Rispondi col tuo patrimonio liquido. Salva il tuo futuro.' },
+    FALLIMENTARE: { title: 'Procedura Fallimentare / CCII', impact: 'CRITICO', legal_ref: 'Art. 150 CCII', bank: 0, policy_standard: 70, policy_90gs: 90, pip: 100, hook: 'Se l\'azienda affonda, il fondo pensione è l\'unica scialuppa legale che il curatore non può toccare.' },
+    AMMINISTRATORE: { title: 'Responsabilità Amministratore', impact: 'CRITICO', legal_ref: 'Art. 2392 c.c.', bank: 0, policy_standard: 75, policy_90gs: 85, pip: 100, hook: 'Azioni di responsabilità contro il CDA? I tuoi risparmi personali sono nel mirino. Proteggili.' },
+    FORNITORI: { title: 'Aggressione Fornitori / Terzi', impact: 'MEDIO', legal_ref: 'Art. 1923 c.c.', bank: 0, policy_standard: 100, policy_90gs: 100, pip: 100, hook: 'Controversie commerciali? I soldi in banca sono i primi a sparire. Quelli nel fondo sono blindati.' }
   },
   COMPARISON_MATRIX: [
-    { asset: "CONTO CORRENTE", shield: "NULLO", risk: "100%", detail: "Pignorabile istantaneamente." },
-    { asset: "FONDO PENSIONE", shield: "MASSIMO", risk: "NULLO", detail: "Segregazione patrimoniale speciale." }
+    { asset: 'Conto Corrente', shield: 'NULLO', risk: '100%', detail: 'Interamente pignorabile.' },
+    { asset: 'Polizza Vita (Ramo I)', shield: 'MASSIMO', risk: '0%', detail: 'Art. 1923 c.c. - Impignorabile.' },
+    { asset: 'Fondo Pensione', shield: 'MASSIMO', risk: '0%', detail: 'Art. 2117 c.c. - Segregazione totale.' }
   ]
-};
-
-export const ZURICH_SMART_CONSTANTS = {
-  TARGET_ADVISORY: [{ title: 'Neo-Genitori', hook: 'Proteggi il loro futuro', need: 'Protezione reddito' }],
-  PRICING_TABLE_100K: {
-    NON_SMOKER: [{ age: 30, y5: 120, y10: 150, y15: 180, y20: 210 }, { age: 40, y5: 220, y10: 280, y15: 350, y20: 420 }],
-    SMOKER: [{ age: 30, y5: 180, y10: 220, y15: 270, y20: 330 }, { age: 40, y5: 350, y10: 450, y15: 580, y20: 720 }]
-  },
-  INJURIES: [{ name: 'Frattura femore', level: 1, amount: 2500, category: 'FRATTURE' }],
-  EXCLUSIONS: { TCM_SPECIFIC: [{ title: 'Dolo', desc: 'Atto volontario' }], GENERAL: [{ title: 'Guerra', desc: 'Eventi bellici' }], SPORTS: ['Pugilato'] }
-};
-
-export const ZURICH_SMART_TECHNICAL_DATA = {
-  ACCUMULATION_LIMITS: [{ maxAge: 40, limit: 300000 }, { maxAge: 55, limit: 200000 }],
-  WAITING_PERIOD: { EXCEPTIONS_DISEASES: ['Infarto', 'Ictus'] }
-};
-
-export const ZURICH_SMART_COMMISSION_DATA = {
-  FIXED_PRACTICE_COST: 40,
-  PAYIN_RATES: { DUR_5Y: 0.40, DUR_10_15_20Y: 0.80, RECURRING_AFTER_Y1: 0.10 },
-  FIXED_PAYOUT: { NEW_BUSINESS: 0.875, RECURRING: 0.50 }
 };
 
 export const PROTECTION_PARADOX_DATA = {
   PIL_PROTECTION: { italy: 1.9, oecd_avg: 5.1 },
-  HEALTH_OUT_OF_POCKET: { italy: 22, oecd_avg: 14 },
-  PROFILES: { 
-    SMALL: { tag: 'Retail', focus: 'Sicurezza', risk_economic: 'Alto', risk_health: 'Medio', risk_legacy: 'Basso' },
-    LARGE: { tag: 'Wealth', focus: 'Protezione', risk_economic: 'Basso', risk_health: 'Alto', risk_legacy: 'Alto' }
+  HEALTH_OUT_OF_POCKET: { italy: 22, oecd_avg: 15 },
+  PROFILES: {
+    SMALL: { tag: 'Piccolo Risparmiatore', focus: 'Sicurezza', risk_economic: 'Erosione inflazione', risk_health: 'Costi RSA imprevisti', risk_legacy: 'Debiti ereditari' },
+    LARGE: { tag: 'HNWI / Private', focus: 'Protezione', risk_economic: 'Aggressione creditori', risk_health: 'Continuità aziendale', risk_legacy: 'Imposta successione' }
   }
 };
+
+export const REGULATIONS: RegulationItem[] = [
+  { id: '1', title: 'D.Lgs. 252/05', category: 'DECRETO', content: 'La norma fondamentale sulla previdenza complementare in Italia.', reference: 'D.Lgs. 252/2005' },
+  { id: '2', title: 'Circolare AdE 19/E 2024', category: 'CIRCOLARE', content: 'Chiarimenti sulla tassazione delle polizze vita e successione.', reference: 'Circolare 19/E', date: '2024' },
+  { id: '3', title: 'DIP Smart Protection 03/2025', category: 'PRODOTTO', content: 'Set informativo per la protezione decesso e lesioni.', reference: 'DIP 03.2025', date: '2025' }
+];
 
 export const MARKET_INSIGHTS_2025 = {
   INTERNATIONAL_RANKING: [{ country: 'Italia', gdp_pct: 11.1 }, { country: 'Media OCSE', gdp_pct: 85 }],
@@ -219,29 +285,6 @@ export const MARKET_INSIGHTS_2025 = {
 
 export const HISTORICAL_DATA_20Y: HistoricalDataPoint[] = [
   { year: 2000, inflation: 2.5, tfrRate: 3.38, ftseMib: 4.5, jpmGlobal: 3.2, event: 'Bolla DotCom' },
-  { year: 2001, inflation: 2.8, tfrRate: 3.60, ftseMib: -25.0, jpmGlobal: 4.1, event: 'Attacco Torri Gemelle' },
-  { year: 2002, inflation: 2.5, tfrRate: 3.38, ftseMib: -20.0, jpmGlobal: 5.5, event: 'Passaggio all\'Euro' },
-  { year: 2003, inflation: 2.7, tfrRate: 3.53, ftseMib: 12.0, jpmGlobal: 3.8, event: 'Guerra Iraq' },
-  { year: 2004, inflation: 2.2, tfrRate: 3.15, ftseMib: 15.0, jpmGlobal: 4.2, event: 'Recupero Economico' },
-  { year: 2005, inflation: 1.9, tfrRate: 2.93, ftseMib: 13.0, jpmGlobal: 3.5, event: 'Fase Espansiva' },
-  { year: 2006, inflation: 2.1, tfrRate: 3.08, ftseMib: 18.0, jpmGlobal: 2.8, event: 'Mondiali Germania' },
-  { year: 2007, inflation: 1.8, tfrRate: 2.85, ftseMib: -5.0, jpmGlobal: 3.1, event: 'Riforma TFR (D.Lgs 252)' },
-  { year: 2008, inflation: 3.3, tfrRate: 3.98, ftseMib: -49.0, jpmGlobal: 7.2, event: 'Crisi Lehman Brothers' },
-  { year: 2009, inflation: 0.8, tfrRate: 2.10, ftseMib: 20.0, jpmGlobal: 2.5, event: 'Inizio Quantitative Easing' },
-  { year: 2010, inflation: 1.5, tfrRate: 2.63, ftseMib: -10.0, jpmGlobal: 1.8, event: 'Crisi Debiti Sovrani' },
-  { year: 2011, inflation: 2.8, tfrRate: 3.60, ftseMib: -25.0, jpmGlobal: 4.5, event: 'Governo Monti / Salva Italia' },
-  { year: 2012, inflation: 3.0, tfrRate: 3.75, ftseMib: 8.0, jpmGlobal: 6.2, event: 'Whatever it takes (Draghi)' },
-  { year: 2013, inflation: 1.2, tfrRate: 2.40, ftseMib: 16.0, jpmGlobal: 1.2, event: 'Elezioni Politiche IT' },
-  { year: 2014, inflation: 0.2, tfrRate: 1.65, ftseMib: 0.5, jpmGlobal: 8.5, event: 'Inflazione Zero' },
-  { year: 2015, inflation: 0.0, tfrRate: 1.50, ftseMib: 14.0, jpmGlobal: 2.1, event: 'Jobs Act' },
-  { year: 2016, inflation: -0.1, tfrRate: 1.50, ftseMib: -10.0, jpmGlobal: 3.4, event: 'Brexit / Referendum Cost.' },
-  { year: 2017, inflation: 1.2, tfrRate: 2.40, ftseMib: 15.0, jpmGlobal: 0.8, event: 'Introduzione PIR' },
-  { year: 2018, inflation: 1.1, tfrRate: 2.33, ftseMib: -14.0, jpmGlobal: 1.5, event: 'Guerra Dazi USA/Cina' },
-  { year: 2019, inflation: 0.6, tfrRate: 1.95, ftseMib: 28.0, jpmGlobal: 6.0, event: 'Rally Mercati' },
-  { year: 2020, inflation: -0.2, tfrRate: 1.50, ftseMib: -5.0, jpmGlobal: 5.2, event: 'Pandemia COVID-19' },
-  { year: 2021, inflation: 1.9, tfrRate: 2.93, ftseMib: 23.0, jpmGlobal: -1.5, event: 'Ripresa Post-Pandemica' },
-  { year: 2022, inflation: 8.1, tfrRate: 7.58, ftseMib: -12.0, jpmGlobal: -15.0, event: 'Guerra Ucraina / Iperinflazione' },
-  { year: 2023, inflation: 5.7, tfrRate: 5.78, ftseMib: 28.0, jpmGlobal: 4.5, event: 'Fine Rialzi Tassi BCE' },
   { year: 2024, inflation: 1.2, tfrRate: 2.40, ftseMib: 18.0, jpmGlobal: 5.5, event: 'Normalizzazione Inflazione' }
 ];
 

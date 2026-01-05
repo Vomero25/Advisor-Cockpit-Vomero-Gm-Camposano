@@ -32,6 +32,10 @@ import CovipIntelligence2024View from './CovipIntelligence2024View';
 import MethodologyView from './MethodologyView';
 import RitaSimulatorView from './RitaSimulatorView';
 import ExtraDeductibilityView from './ExtraDeductibilityView';
+import SpazioPrevidenzaView from './SpazioPrevidenzaView';
+import ZurichSmartProtectionView from './ZurichSmartProtectionView';
+import FiscalArbitrageView from './FiscalArbitrageView';
+import RegulationsFondiView from './RegulationsFondiView';
 import { PageView } from '../types';
 import { Menu } from 'lucide-react';
 
@@ -103,6 +107,14 @@ const App: React.FC = () => {
         return <MethodologyView />;
       case PageView.EXTRA_DEDUCTIBILITY:
         return <ExtraDeductibilityView />;
+      case PageView.ZURICH_SPAZIO_PREVIDENZA:
+        return <SpazioPrevidenzaView />;
+      case PageView.ZURICH_SMART_PROTECTION:
+        return <ZurichSmartProtectionView />;
+      case PageView.FISCAL_ARBITRAGE:
+        return <FiscalArbitrageView />;
+      case PageView.REGULATIONS_FONDI:
+        return <RegulationsFondiView />;
       default:
         return <Dashboard onChangeView={setCurrentView} />;
     }
@@ -117,7 +129,7 @@ const App: React.FC = () => {
         setIsOpen={setIsSidebarOpen}
       />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <div className="lg:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-10">
+        <div className="lg:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-10 no-print">
           <h1 className="font-bold text-slate-900 uppercase tracking-tighter">GRUPPO VOMERO</h1>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 hover:bg-slate-100 rounded">
             <Menu size={24} />

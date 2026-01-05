@@ -32,14 +32,9 @@ export interface FundPerformanceResponse {
   sources: Array<{ title: string; uri: string }>;
 }
 
-/**
- * Recupera i rendimenti di un fondo specifico via Google Search Grounding.
- */
 export const fetchFundPerformance = async (query: string): Promise<FundPerformanceResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
-    // Fix: Removed responseMimeType and responseSchema because they are incompatible with search grounding.
-    // Updated prompt to request structured JSON for manual extraction.
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: `Recupera i dati ufficiali COVIP per il seguente fondo pensione o società: "${query}". 
@@ -59,12 +54,10 @@ export const fetchFundPerformance = async (query: string): Promise<FundPerforman
       }
     });
 
-    // Fix: Extract JSON from potentially conversational response text
     const text = response.text || "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
     
-    // Fix: Extract grounding sources as required by mandatory guidelines
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
     
@@ -87,8 +80,6 @@ export interface HistoricalReturnsResponse {
 export const fetchHistoricalReturns = async (query: string): Promise<HistoricalReturnsResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
-    // Fix: Added googleSearch tool to fetchHistoricalReturns for real-time market accuracy.
-    // Removed JSON mode to prevent grounding metadata from causing parsing errors.
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: `Analizza e recupera i rendimenti percentuali annuali (Total Return) dal 2000 al 2024 per lo strumento finanziario o indice: "${query}". 
@@ -100,12 +91,10 @@ export const fetchHistoricalReturns = async (query: string): Promise<HistoricalR
       }
     });
 
-    // Fix: Extract JSON block from response text
     const text = response.text || "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
     
-    // Fix: Mandatory grounding sources extraction
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = chunks ? chunks.filter((c: any) => c.web).map((c: any) => ({ title: c.web.title, uri: c.web.uri })) : [];
     

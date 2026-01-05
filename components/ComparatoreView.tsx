@@ -12,20 +12,28 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { COVIP_MARKET_DATA } from '../constants';
 import { fetchFundPerformance, FundPerformanceResponse } from '../services/geminiService';
 
+// Benchmark estratti dal report COVIP 2024 (Supplementary Pension Funds: Main Data)
+const COVIP_2024_BENCHMARKS = [
+  { id: 'COVIP_FPN', company: 'BENCHMARK', name: 'Media Fondi Negoziali', type: 'FPA', category: 'BILANCIATO', y1: 6.0, y5: 2.2, y10: 2.2, isCore: false },
+  { id: 'COVIP_FPA', company: 'BENCHMARK', name: 'Media Fondi Aperti', type: 'FPA', category: 'BILANCIATO', y1: 6.5, y5: 2.4, y10: 2.4, isCore: false },
+  { id: 'COVIP_PIP', company: 'BENCHMARK', name: 'Media PIP Unit-Linked', type: 'PIP', category: 'AZIONARIO', y1: 9.0, y5: 3.0, y10: 2.9, isCore: false },
+  { id: 'COVIP_TFR', company: 'INFLAZIONE', name: 'Rivalutazione TFR 2024', type: 'BENCH', category: 'GARANTITO', y1: 1.9, y5: 2.4, y10: 2.4, isCore: false }
+];
+
 const ComparatoreView: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<'TUTTI' | 'AZIONARIO' | 'BILANCIATO' | 'PRUDENTE_OBB' | 'GARANTITO'>('TUTTI');
   const [activeType, setActiveType] = useState<'TUTTI' | 'FPA' | 'PIP'>('TUTTI');
   const [activeCompany, setActiveCompany] = useState<string>('TUTTE');
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>(['Z_PIP_AZN', 'A_FPA_C25']);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>(['Z_PIP_AZN', 'A_FPA_C25', 'COVIP_TFR']);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Stato AI
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiProducts, setAiProducts] = useState<FundPerformanceResponse[]>([]);
 
-  // Database unificato (locale + risultati AI)
+  // Database unificato (locale + benchmarks COVIP 2024 + risultati AI)
   const unifiedDatabase = useMemo(() => {
-    return [...COVIP_MARKET_DATA, ...aiProducts];
+    return [...COVIP_MARKET_DATA, ...COVIP_2024_BENCHMARKS, ...aiProducts];
   }, [aiProducts]);
 
   const companies = useMemo(() => {
@@ -60,15 +68,13 @@ const ComparatoreView: React.FC = () => {
     try {
       const result = await fetchFundPerformance(searchTerm);
       setAiProducts(prev => {
-        // Evita duplicati se l'utente clicca più volte lo stesso termine
         if (prev.some(p => p.name === result.name)) return prev;
         return [...prev, result];
       });
-      // Aggiungi automaticamente ai selezionati
       if (!selectedProductIds.includes(result.id)) {
         setSelectedProductIds(prev => [...prev, result.id]);
       }
-      setSearchTerm(''); // Pulisci ricerca dopo successo
+      setSearchTerm('');
     } catch (err) {
       alert("Impossibile recuperare i dati dal web. Verifica il nome del fondo.");
     } finally {
@@ -76,14 +82,6 @@ const ComparatoreView: React.FC = () => {
     }
   };
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setActiveCategory('TUTTI');
-    setActiveType('TUTTI');
-    setActiveCompany('TUTTE');
-  };
-
-  // Fix: Aggregate all grounding sources from AI-discovered products for mandatory display
   const allAiSources = useMemo(() => {
     const sourcesMap = new Map();
     aiProducts.forEach(p => {
@@ -95,24 +93,24 @@ const ComparatoreView: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-20">
       
-      {/* HEADER STRATEGICO */}
+      {/* HEADER STRATEGICO CON DATI REPORT */}
       <div className="bg-[#0a0f1d] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden border-b-8 border-indigo-600">
          <div className="absolute top-0 right-0 p-10 opacity-5 rotate-12"><Landmark size={200} /></div>
          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
                <div className="flex items-center gap-3 mb-2">
                   <div className="bg-indigo-600 p-2 rounded-xl"><ArrowRightLeft size={24} /></div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 italic">Analisi Comparativa Fondi Pensione 2024</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 italic">Market Benchmark - Relazione COVIP 2024</span>
                </div>
-               <h2 className="text-4xl font-black uppercase tracking-tighter italic">Market Asset <span className="text-indigo-500">Benchmark</span></h2>
+               <h2 className="text-4xl font-black uppercase tracking-tighter italic">Analisi <span className="text-indigo-500">Rendimenti Netti</span></h2>
                <p className="text-slate-400 mt-2 font-medium italic leading-relaxed max-w-xl">
-                  Confronta i rendimenti Zurich e Anima con quelli dei competitor. Usa l'AI per recuperare dati in tempo reale dal web.
+                  Confronta Zurich e Anima con le medie nazionali. Nota: Nel 2024 l'azionario ha reso il 10,4% vs 1,9% del TFR.
                </p>
             </div>
-            <div className="bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 text-center">
-               <p className="text-[9px] font-black uppercase text-amber-500 mb-1 tracking-widest">Database Intelligence</p>
-               <p className="text-xl font-black text-white">Hybrid Analysis</p>
-               <p className="text-[9px] font-bold text-slate-500 uppercase mt-1 italic tracking-widest">Locale + Real-Time Search</p>
+            <div className="bg-emerald-500/10 backdrop-blur-md p-6 rounded-3xl border border-emerald-500/20 text-center">
+               <p className="text-[9px] font-black uppercase text-emerald-500 mb-1 tracking-widest">Delta TFR 2024</p>
+               <p className="text-3xl font-black text-white">+7,1%</p>
+               <p className="text-[9px] font-bold text-slate-500 uppercase mt-1 italic">Gap Azionario vs Azienda</p>
             </div>
          </div>
       </div>
@@ -125,17 +123,12 @@ const ComparatoreView: React.FC = () => {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input 
                      type="text" 
-                     placeholder="Cerca Società o Fondo (es. 'Axa Previdenza', 'Amundi')..." 
+                     placeholder="Analisi Competitor (es. 'Generali', 'Axa')..." 
                      value={searchTerm}
                      onChange={(e) => setSearchTerm(e.target.value)}
                      onKeyDown={(e) => e.key === 'Enter' && handleAiSearch()}
-                     className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all"
+                     className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
                   />
-                  {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      <X size={18} />
-                    </button>
-                  )}
                </div>
                <button 
                   onClick={handleAiSearch}
@@ -148,32 +141,9 @@ const ComparatoreView: React.FC = () => {
             </div>
 
             <div className="lg:col-span-4 flex justify-end">
-               <button onClick={clearFilters} className="text-[10px] font-black uppercase text-slate-400 hover:text-rose-600 flex items-center gap-1 transition-colors">
+               <button onClick={() => { setSearchTerm(''); setActiveCategory('TUTTI'); setActiveType('TUTTI'); }} className="text-[10px] font-black uppercase text-slate-400 hover:text-rose-600 flex items-center gap-1 transition-colors">
                   <RefreshCw size={14} /> Resetta Filtri
                </button>
-            </div>
-         </div>
-
-         <div className="flex flex-wrap gap-4 items-center pt-2 border-t border-slate-50">
-            <div className="flex items-center gap-2">
-               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Categoria:</span>
-               <div className="flex gap-1">
-                  {(['TUTTI', 'AZIONARIO', 'BILANCIATO', 'GARANTITO'] as const).map(cat => (
-                     <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeCategory === cat ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                        {cat === 'TUTTI' ? 'TUTTE' : cat}
-                     </button>
-                  ))}
-               </div>
-            </div>
-            <div className="flex items-center gap-2 ml-auto">
-               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipo:</span>
-               <div className="flex gap-1">
-                  {(['TUTTI', 'FPA', 'PIP'] as const).map(t => (
-                     <button key={t} onClick={() => setActiveType(t)} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeType === t ? 'bg-slate-800 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                        {t}
-                     </button>
-                  ))}
-               </div>
             </div>
          </div>
       </div>
@@ -183,13 +153,12 @@ const ComparatoreView: React.FC = () => {
          <div className="flex justify-between items-center mb-12">
             <div>
                <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.2em] flex items-center gap-2">
-                  <TrendingUp size={16} className="text-indigo-600" /> Rendimenti Netti Multi-Periodo (%)
+                  <TrendingUp size={16} className="text-indigo-600" /> Performance vs Benchmark COVIP 2024 (%)
                </h3>
             </div>
             <div className="flex gap-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-300"></div> Netto 2024</div>
-               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-600"></div> Media 5 Anni</div>
-               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-900"></div> Media 10 Anni</div>
+               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-600"></div> Media 10 Anni</div>
             </div>
          </div>
          
@@ -214,16 +183,13 @@ const ComparatoreView: React.FC = () => {
                         formatter={(val: number) => [`${val.toFixed(2)}%`, '']}
                      />
                      <Bar dataKey="y1" name="Netto 2024" fill="#818cf8" radius={[8, 8, 0, 0]} barSize={22} />
-                     <Bar dataKey="y5" name="Media 5Y" fill="#4f46e5" radius={[8, 8, 0, 0]} barSize={22} />
                      <Bar dataKey="y10" name="Media 10Y" fill="#0f172a" radius={[8, 8, 0, 0]} barSize={22} />
                   </BarChart>
                </ResponsiveContainer>
             ) : (
                <div className="h-full flex flex-col items-center justify-center text-slate-300 border-4 border-dashed border-slate-50 rounded-[4rem]">
                   <BarChart3 size={80} className="mb-4 opacity-5" />
-                  <p className="text-sm font-black uppercase tracking-widest text-slate-400">
-                     Seleziona i comparti dalla lista qui sotto
-                  </p>
+                  <p className="text-sm font-black uppercase tracking-widest text-slate-400">Seleziona i comparti dalla lista</p>
                </div>
             )}
          </div>
@@ -232,29 +198,27 @@ const ComparatoreView: React.FC = () => {
       {/* DATABASE INTEGRALE */}
       <div className="bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden">
          <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Database Comparti Integrale</h3>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Database Comparti & Medie COVIP</h3>
             <div className="flex items-center gap-4">
-               {isAiLoading && <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 animate-pulse"><Loader2 className="animate-spin" size={14}/> ANALISI AI IN CORSO...</div>}
+               {isAiLoading && <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 animate-pulse"><Loader2 className="animate-spin" size={14}/> ANALISI AI...</div>}
                <span className="text-[10px] font-black text-slate-400 uppercase">Selezione: {selectedProductIds.length}/10</span>
             </div>
          </div>
 
-         <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
+         <div className="overflow-x-auto max-h-[500px] overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
                <thead className="sticky top-0 z-20">
                   <tr className="bg-[#0f172a] text-white text-[9px] font-black uppercase tracking-[0.2em]">
-                     <th className="px-8 py-6">Fondo / Società / Comparto</th>
-                     <th className="px-4 py-6 text-center">Tipo</th>
+                     <th className="px-8 py-6">Fondo / Società / Benchmark</th>
                      <th className="px-6 py-6 text-center text-emerald-400">Netto 2024</th>
-                     <th className="px-6 py-6 text-center">M. 5Y</th>
-                     <th className="px-6 py-6 text-center">M. 10Y</th>
+                     <th className="px-6 py-6 text-center">Media 10Y</th>
                      <th className="px-8 py-6 text-right">Azione</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
                   {filteredProducts.map((p) => {
                      const isSelected = selectedProductIds.includes(p.id);
-                     const isAiGenerated = p.id.startsWith('AI_');
+                     const isBench = p.company === 'BENCHMARK' || p.company === 'INFLAZIONE';
                      
                      return (
                         <tr key={p.id} className={`hover:bg-slate-50 transition-colors ${isSelected ? 'bg-indigo-50/50' : ''}`}>
@@ -263,27 +227,22 @@ const ComparatoreView: React.FC = () => {
                                  <div className={`w-3 h-3 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                                  <div>
                                     <div className="flex items-center gap-2">
-                                       <p className={`text-[10px] font-black uppercase leading-none ${p.company === 'ZURICH' ? 'text-indigo-600' : 'text-slate-400'}`}>{p.company}</p>
-                                       {isAiGenerated && <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase flex items-center gap-1"><Sparkles size={8}/> AI DATA</span>}
+                                       <p className={`text-[10px] font-black uppercase leading-none ${isBench ? 'text-rose-500' : 'text-slate-400'}`}>{p.company}</p>
                                     </div>
-                                    <p className="text-sm font-black uppercase tracking-tighter mt-1 text-slate-800">{p.name}</p>
+                                    <p className={`text-sm font-black uppercase tracking-tighter mt-1 ${isBench ? 'text-slate-900 italic' : 'text-slate-700'}`}>{p.name}</p>
                                  </div>
                               </div>
                            </td>
-                           <td className="px-4 py-5 text-center">
-                              <span className="text-[9px] font-black px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">{p.type}</span>
+                           <td className={`px-6 py-5 text-center text-lg font-black ${p.y1 > 8 ? 'text-emerald-600' : 'text-slate-900'}`}>
+                              +{p.y1.toFixed(1)}%
                            </td>
-                           <td className={`px-6 py-5 text-center text-lg font-black ${p.y1 > 12 ? 'text-emerald-600' : 'text-slate-900'}`}>
-                              +{p.y1.toFixed(2)}%
-                           </td>
-                           <td className="px-6 py-5 text-center font-bold text-slate-500 text-sm">{p.y5 > 0 ? `${p.y5.toFixed(2)}%` : '-'}</td>
-                           <td className="px-6 py-5 text-center font-bold text-slate-900 text-sm">{p.y10 > 0 ? `${p.y10.toFixed(2)}%` : '-'}</td>
+                           <td className="px-6 py-5 text-center font-bold text-slate-500 text-sm">{p.y10 > 0 ? `${p.y10.toFixed(1)}%` : '-'}</td>
                            <td className="px-8 py-5 text-right">
                               <button 
                                  onClick={() => toggleProduct(p.id)}
-                                 className={`p-2.5 rounded-xl transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-lg rotate-180' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}`}
+                                 className={`p-2 rounded-xl transition-all ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}`}
                               >
-                                 {isSelected ? <MinusCircle size={20} /> : <PlusCircle size={20} />}
+                                 {isSelected ? <MinusCircle size={18} /> : <PlusCircle size={18} />}
                               </button>
                            </td>
                         </tr>
@@ -294,7 +253,6 @@ const ComparatoreView: React.FC = () => {
          </div>
       </div>
 
-      {/* Fix: Display mandatory grounding sources for AI search results */}
       {allAiSources.length > 0 && (
          <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm animate-fade-in">
             <h4 className="text-xs font-black uppercase tracking-widest text-indigo-900 mb-4 flex items-center gap-2">
@@ -302,27 +260,12 @@ const ComparatoreView: React.FC = () => {
             </h4>
             <div className="flex flex-wrap gap-3">
                {allAiSources.map((source, idx) => (
-                  <a 
-                     key={idx} 
-                     href={source.uri} 
-                     target="_blank" 
-                     rel="noopener noreferrer" 
-                     className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2"
-                  >
+                  <a key={idx} href={source.uri} target="_blank" rel="noopener noreferrer" className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2">
                      {source.title} <ExternalLink size={12} />
                   </a>
                ))}
             </div>
          </div>
-      )}
-
-      {/* ALERT STRATEGICO */}
-      {filteredProducts.length === 0 && !isAiLoading && (
-        <div className="bg-indigo-50 border-2 border-dashed border-indigo-200 p-12 rounded-[3rem] text-center animate-pulse">
-           <Globe className="mx-auto text-indigo-400 mb-4" size={48} />
-           <h4 className="text-xl font-black text-indigo-900 uppercase italic">Nessun risultato locale trovato</h4>
-           <p className="text-indigo-600 mt-2 font-medium">Usa il tasto <strong>"Cerca con AI"</strong> per estrarre i dati ufficiali COVIP 2024 dal web per <strong>"{searchTerm}"</strong>.</p>
-        </div>
       )}
     </div>
   );

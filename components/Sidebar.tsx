@@ -8,7 +8,7 @@ import {
   Layers, Lock, Repeat, Target, Landmark, Eye, BarChart3, ShieldCheck,
   Search, Crown, Banknote, History, AlertOctagon, GraduationCap, ArrowLeftRight,
   Globe2, Brain, Ghost, LifeBuoy, TrendingDown, Map, Sparkles, LineChart, Shield,
-  Settings2, Binary, Timer, Sparkle
+  Settings2, Binary, Timer, Sparkle, ArrowUpRight, Gavel
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,46 +22,38 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
   
   const groups = [
     {
+      label: 'Vomero Elite Lab',
+      items: [
+        { view: PageView.NEGOTIATION, label: 'Coaching Lab AI', icon: BrainCircuit },
+      ]
+    },
+    {
       label: 'Focus News 2026',
       items: [
         { view: PageView.BUDGET_2026, label: 'Legge Bilancio 2026', icon: Sparkles },
       ]
     },
     {
-      label: 'Strategia & Diagnosi',
+      label: 'Area Previdenza',
       items: [
-        { view: PageView.DASHBOARD, label: 'Command Center', icon: LayoutDashboard },
-        { view: PageView.INTERVIEW, label: 'Diagnosi Clienti', icon: Target },
-        { view: PageView.METHODOLOGY, label: 'Motore di Calcolo', icon: Binary },
-        { view: PageView.PENSION_EROSION, label: 'Audit Svalutazione', icon: TrendingDown },
-        { view: PageView.BEHAVIORAL_FINANCE, label: 'Odissea Previdenza', icon: Brain },
-        { view: PageView.PROTECTION_PARADOX, label: 'Paradosso Protezione', icon: AlertOctagon },
-        { view: PageView.NEGOTIATION, label: 'Sales Strategist AI', icon: BrainCircuit },
-      ]
-    },
-    {
-      label: 'Benchmark & Mercato',
-      items: [
-        { view: PageView.COVIP_INTELLIGENCE_2024, label: 'COVIP Intelligence 24', icon: Shield },
-        { view: PageView.PENSION_GEOGRAPHY, label: 'Geografia Pensioni', icon: Map },
-        { view: PageView.COMPARATORE, label: 'Comparatore Rendimenti', icon: ArrowLeftRight },
-        { view: PageView.COVIP_BENCHMARK, label: 'Analisi Benchmark', icon: BarChart3 },
-        { view: PageView.MARKET_DIMENSIONS, label: 'Dimensioni Mercato', icon: Globe2 },
-        { view: PageView.PAC_SIMULATOR, label: 'Backtest PAC', icon: History },
-      ]
-    },
-    {
-      label: 'Area B2C (Lavoratore)',
-      items: [
-        { view: PageView.VANTAGGI_LAVORATORI, label: 'Perché conviene?', icon: Eye },
+        { view: PageView.ZURICH_SPAZIO_PREVIDENZA, label: 'Zurich Spazio Previdenza', icon: Rocket },
+        { view: PageView.VANTAGGI_LAVORATORI, label: 'Vantaggi Lavoratore', icon: Eye },
         { view: PageView.EXTRA_DEDUCTIBILITY, label: 'Extra Deducibilità', icon: Sparkle },
         { view: PageView.SIMULATOR, label: 'TFR vs Fondo', icon: Calculator },
         { view: PageView.RITA_SIMULATOR, label: 'Simulatore R.I.T.A.', icon: Timer },
-        { view: PageView.FISCAL_CALCULATOR, label: 'Ingegneria Rendita', icon: Banknote },
       ]
     },
     {
-      label: 'Area B2B (Imprenditore)',
+      label: 'Protezione & Wealth',
+      items: [
+        { view: PageView.ZURICH_SMART_PROTECTION, label: 'Zurich Smart Protection', icon: ShieldPlus },
+        { view: PageView.LTC_ANALYSIS, label: 'Rischio Longevità (LTC)', icon: HeartPulse },
+        { view: PageView.ASSET_PROTECTION, label: "Scudo Patrimoniale", icon: Lock },
+        { view: PageView.SUCCESSION_ANALYSIS, label: "Successione a 0€", icon: Scale },
+      ]
+    },
+    {
+      label: 'Area B2B (Azienda)',
       items: [
         { view: PageView.VANTAGGI_AZIENDE, label: 'Vantaggi Azienda', icon: Factory },
         { view: PageView.CORPORATE_SIMULATOR, label: 'Audit TFR Dinamico', icon: Briefcase },
@@ -69,14 +61,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
       ]
     },
     {
-      label: 'Wealth Protection',
+      label: 'Strategia & Benchmark',
       items: [
-        { view: PageView.WEALTH_PROTECTION_MASTERCLASS, label: 'Masterclass Normativa', icon: GraduationCap },
-        { view: PageView.MULTINVEST_ANALYSIS, label: 'MultInvest Shield', icon: Crown },
-        { view: PageView.ASSET_PROTECTION, label: 'Scudo Patrimoniale', icon: Lock },
-        { view: PageView.SUCCESSION_ANALYSIS, label: 'Successione Finanziaria', icon: Scale },
-        { view: PageView.REAL_ESTATE_SUCCESSION, label: 'Successione Immobili', icon: Home },
-        { view: PageView.LTC_ANALYSIS, label: 'Rischio Longevità', icon: HeartPulse },
+        { view: PageView.DASHBOARD, label: 'Command Center', icon: LayoutDashboard },
+        { view: PageView.INTERVIEW, label: 'Diagnosi Clienti', icon: Target },
+        { view: PageView.COVIP_INTELLIGENCE_2024, label: 'COVIP Intelligence 24', icon: Shield },
+        { view: PageView.COMPARATORE, label: 'Comparatore Rendimenti', icon: ArrowLeftRight },
       ]
     }
   ];
@@ -110,16 +100,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = currentView === item.view;
+                  const isElite = group.label === 'Vomero Elite Lab';
                   return (
                     <button
                       key={item.view}
                       onClick={() => handleNavClick(item.view)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : isElite ? 'hover:bg-amber-500/5 hover:text-amber-500 text-slate-300' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
                     >
-                      <div className={`${isActive ? 'text-white' : 'text-slate-500 group-hover:text-indigo-400'} transition-colors`}>
+                      <div className={`${isActive ? 'text-white' : isElite ? 'text-amber-500' : 'text-slate-500 group-hover:text-indigo-400'} transition-colors`}>
                         <Icon size={18} />
                       </div>
-                      <span className={`font-bold text-sm tracking-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{item.label}</span>
+                      <span className={`font-bold text-sm tracking-tight ${isActive ? 'text-white' : ''}`}>{item.label}</span>
                     </button>
                   );
                 })}
@@ -130,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
 
         <div className="p-6 border-t border-slate-800 bg-[#070b14]">
           <div className="bg-slate-900 rounded-2xl p-4 text-[10px] text-slate-500 font-bold border border-slate-800/50 italic leading-relaxed">
-            "La consulenza è l'arte di proteggere il futuro che il cliente non ha ancora immaginato."
+            "La protezione è il contratto che trasforma un rischio in una certezza finanziaria."
           </div>
         </div>
       </div>
