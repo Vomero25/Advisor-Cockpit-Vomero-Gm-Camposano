@@ -22,6 +22,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
   
   const groups = [
     {
+      label: 'Home Base',
+      items: [
+        { view: PageView.DASHBOARD, label: 'Command Center', icon: LayoutDashboard },
+      ]
+    },
+    {
       label: 'Vomero Elite Lab',
       items: [
         { view: PageView.NEGOTIATION, label: 'Coaching Lab AI', icon: BrainCircuit },
@@ -63,7 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
     {
       label: 'Strategia & Benchmark',
       items: [
-        { view: PageView.DASHBOARD, label: 'Command Center', icon: LayoutDashboard },
         { view: PageView.INTERVIEW, label: 'Diagnosi Clienti', icon: Target },
         { view: PageView.COVIP_INTELLIGENCE_2024, label: 'COVIP Intelligence 24', icon: Shield },
         { view: PageView.COMPARATORE, label: 'Comparatore Rendimenti', icon: ArrowLeftRight },
@@ -101,13 +106,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
                   const Icon = item.icon;
                   const isActive = currentView === item.view;
                   const isElite = group.label === 'Vomero Elite Lab';
+                  const isHome = group.label === 'Home Base';
                   return (
                     <button
                       key={item.view}
                       onClick={() => handleNavClick(item.view)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : isElite ? 'hover:bg-amber-500/5 hover:text-amber-500 text-slate-300' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : isElite ? 'hover:bg-amber-500/5 hover:text-amber-500 text-slate-300' : isHome ? 'hover:bg-white/10 text-slate-200 font-black' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
                     >
-                      <div className={`${isActive ? 'text-white' : isElite ? 'text-amber-500' : 'text-slate-500 group-hover:text-indigo-400'} transition-colors`}>
+                      <div className={`${isActive ? 'text-white' : isElite ? 'text-amber-500' : isHome ? 'text-amber-400' : 'text-slate-500 group-hover:text-indigo-400'} transition-colors`}>
                         <Icon size={18} />
                       </div>
                       <span className={`font-bold text-sm tracking-tight ${isActive ? 'text-white' : ''}`}>{item.label}</span>

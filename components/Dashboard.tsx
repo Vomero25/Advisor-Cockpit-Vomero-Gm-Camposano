@@ -31,10 +31,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 italic">Vomero Elite Advisory - 2025</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter leading-none uppercase">
-              Advisor <span className="text-amber-500">Masterkit</span>
+              Gruppo Vomero <span className="text-amber-500">MasterKit</span>
             </h1>
             <p className="text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
-              La piattaforma definitiva per i consulenti del Gruppo Vomero. Strategie d'urto e calcoli di efficienza fiscale.
+              la piattaforma a supporto del consulente del Gruppo Vomero
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <button onClick={() => onChangeView(PageView.NEGOTIATION)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-8 rounded-2xl flex items-center gap-3 shadow-xl transition-all hover:scale-105 active:scale-95 uppercase text-xs tracking-widest">
