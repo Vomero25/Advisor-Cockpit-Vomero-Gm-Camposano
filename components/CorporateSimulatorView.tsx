@@ -171,7 +171,10 @@ const CorporateSimulatorView: React.FC = () => {
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                    <div className="flex justify-between items-center mb-1">
                       <p className="text-[10px] font-black text-slate-500 uppercase italic">Aliquota Accantonamento ({accrualRate}%)</p>
-                      <Info size={12} className="text-slate-400" title="Valore standard ex Art. 2120 c.c.: 7.41% (1/13.5)" />
+                      {/* Fix: Moved title from Info to a span wrapper to resolve TypeScript error TS2322 */}
+                      <span title="Valore standard ex Art. 2120 c.c.: 7.41% (1/13.5)">
+                        <Info size={12} className="text-slate-400" />
+                      </span>
                    </div>
                    <input type="range" min="6" max="9" step="0.01" value={accrualRate} onChange={(e) => setAccrualRate(Number(e.target.value))} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-indigo-600" />
                    <p className="text-[9px] text-slate-400 mt-1 italic">Riferimento Legale: 7,41% (RAL / 13,5)</p>
