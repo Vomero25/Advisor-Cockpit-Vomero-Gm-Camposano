@@ -49,7 +49,30 @@ export const COVIP_MARKET_DATA: CovipProduct[] = [
 
 export const HISTORICAL_DATA_20Y: HistoricalDataPoint[] = [
   { year: 2000, inflation: 2.5, tfrRate: 3.38, ftseMib: 4.5, jpmGlobal: 3.2, jpmIta35: 3.5, jpmIta57: 4.1, jpmIta10: 5.2, msciWorldEur: -2.1, event: 'Bolla DotCom' },
-  { year: 2024, inflation: 1.2, tfrRate: 2.40, ftseMib: 18.0, jpmGlobal: 5.5, jpmIta35: 3.2, jpmIta57: 4.5, jpmIta10: 5.8, msciWorldEur: 14.2, event: 'Normalizzazione' }
+  { year: 2001, inflation: 2.8, tfrRate: 3.60, ftseMib: -25.0, jpmGlobal: 2.5, jpmIta35: 3.1, jpmIta57: 3.8, jpmIta10: 4.5, msciWorldEur: -15.4, event: '11 Settembre / Euro Fisico' },
+  { year: 2002, inflation: 2.5, tfrRate: 3.38, ftseMib: -26.0, jpmGlobal: 1.8, jpmIta35: 2.9, jpmIta57: 3.5, jpmIta10: 4.2, msciWorldEur: -32.1, event: 'Introduzione Euro' },
+  { year: 2003, inflation: 2.7, tfrRate: 3.53, ftseMib: 14.0, jpmGlobal: 3.5, jpmIta35: 3.8, jpmIta57: 4.2, jpmIta10: 5.0, msciWorldEur: 15.8, event: 'Guerra in Iraq' },
+  { year: 2004, inflation: 2.2, tfrRate: 3.15, ftseMib: 18.0, jpmGlobal: 4.2, jpmIta35: 4.0, jpmIta57: 4.5, jpmIta10: 5.3, msciWorldEur: 9.5, event: 'Allargamento UE' },
+  { year: 2005, inflation: 1.9, tfrRate: 2.93, ftseMib: 15.5, jpmGlobal: 3.8, jpmIta35: 3.6, jpmIta57: 4.1, jpmIta10: 4.8, msciWorldEur: 26.2, event: 'Protocollo Kyoto' },
+  { year: 2006, inflation: 2.1, tfrRate: 3.08, ftseMib: 19.0, jpmGlobal: 2.9, jpmIta35: 3.2, jpmIta57: 3.6, jpmIta10: 4.1, msciWorldEur: 7.4, event: 'Riforma D.Lgs 252/05' },
+  { year: 2007, inflation: 1.8, tfrRate: 2.85, ftseMib: -7.0, jpmGlobal: 4.5, jpmIta35: 4.2, jpmIta57: 4.7, jpmIta10: 5.2, msciWorldEur: -1.7, event: 'Inizio Crisi Subprime' },
+  { year: 2008, inflation: 3.3, tfrRate: 3.98, ftseMib: -48.0, jpmGlobal: 6.8, jpmIta35: 5.5, jpmIta57: 6.2, jpmIta10: 7.5, msciWorldEur: -37.6, event: 'Lehman Brothers' },
+  { year: 2009, inflation: 0.8, tfrRate: 2.10, ftseMib: 19.5, jpmGlobal: 5.2, jpmIta35: 4.8, jpmIta57: 5.4, jpmIta10: 6.5, msciWorldEur: 25.9, event: 'Grande Recessione' },
+  { year: 2010, inflation: 1.5, tfrRate: 2.63, ftseMib: -13.0, jpmGlobal: 4.1, jpmIta35: 4.3, jpmIta57: 4.8, jpmIta10: 5.8, msciWorldEur: 19.5, event: 'Crisi Debito Greco' },
+  { year: 2011, inflation: 2.8, tfrRate: 3.60, ftseMib: -25.0, jpmGlobal: 3.5, jpmIta35: 4.5, jpmIta57: 5.2, jpmIta10: 6.8, msciWorldEur: -2.4, event: 'Crisi Spread / Gov. Monti' },
+  { year: 2012, inflation: 3.0, tfrRate: 3.75, ftseMib: 8.0, jpmGlobal: 6.2, jpmIta35: 5.8, jpmIta57: 6.5, jpmIta10: 7.2, msciWorldEur: 14.1, event: 'Whatever it takes (BCE)' },
+  { year: 2013, inflation: 1.2, tfrRate: 2.40, ftseMib: 16.5, jpmGlobal: -1.5, jpmIta35: 2.2, jpmIta57: 3.5, jpmIta10: 4.8, msciWorldEur: 17.5, event: 'Recessione Tripla' },
+  { year: 2014, inflation: 0.2, tfrRate: 1.65, ftseMib: 0.5, jpmGlobal: 8.5, jpmIta35: 4.2, jpmIta57: 5.8, jpmIta10: 7.5, msciWorldEur: 19.5, event: 'Quantitative Easing' },
+  { year: 2015, inflation: 0.0, tfrRate: 1.50, ftseMib: 12.0, jpmGlobal: 1.5, jpmIta35: 1.8, jpmIta57: 2.5, jpmIta10: 3.2, msciWorldEur: 8.2, event: 'Expo Milano' },
+  { year: 2016, inflation: -0.1, tfrRate: 1.50, ftseMib: -10.0, jpmGlobal: 3.8, jpmIta35: 2.1, jpmIta57: 2.8, jpmIta10: 3.5, msciWorldEur: 10.7, event: 'Brexit / Trump' },
+  { year: 2017, inflation: 1.2, tfrRate: 2.40, ftseMib: 14.0, jpmGlobal: -0.5, jpmIta35: 1.5, jpmIta57: 2.1, jpmIta10: 2.8, msciWorldEur: 7.5, event: 'Ripresa Area Euro' },
+  { year: 2018, inflation: 1.1, tfrRate: 2.33, ftseMib: -16.0, jpmGlobal: 0.2, jpmIta35: 0.8, jpmIta57: 1.2, jpmIta10: 1.8, msciWorldEur: -4.1, event: 'Tensioni USA-Cina' },
+  { year: 2019, inflation: 0.6, tfrRate: 1.95, ftseMib: 28.0, jpmGlobal: 5.8, jpmIta35: 2.5, jpmIta57: 3.5, jpmIta10: 4.5, msciWorldEur: 30.0, event: 'Rallentamento Globale' },
+  { year: 2020, inflation: -0.2, tfrRate: 1.50, ftseMib: -5.0, jpmGlobal: 7.2, jpmIta35: 1.2, jpmIta57: 1.8, jpmIta10: 2.5, msciWorldEur: 6.3, event: 'Pandemia COVID-19' },
+  { year: 2021, inflation: 1.9, tfrRate: 2.93, ftseMib: 23.0, jpmGlobal: -2.1, jpmIta35: -0.5, jpmIta57: -1.2, jpmIta10: -2.5, msciWorldEur: 31.1, event: 'PNRR / Crisi Energetica' },
+  { year: 2022, inflation: 8.1, tfrRate: 7.58, ftseMib: -12.0, jpmGlobal: -12.5, jpmIta35: -8.5, jpmIta57: -10.2, jpmIta10: -15.8, msciWorldEur: -12.8, event: 'Guerra Ucraina / Shock Inflazione' },
+  { year: 2023, inflation: 5.7, tfrRate: 5.78, ftseMib: 28.0, jpmGlobal: 4.5, jpmIta35: 5.2, jpmIta57: 6.8, jpmIta10: 8.5, msciWorldEur: 19.6, event: 'Rialzo Tassi BCE' },
+  { year: 2024, inflation: 1.2, tfrRate: 2.40, ftseMib: 18.0, jpmGlobal: 5.5, jpmIta35: 3.2, jpmIta57: 4.5, jpmIta10: 5.8, msciWorldEur: 14.2, event: 'Normalizzazione / AI Boom' }
 ];
 
 export const ASSET_PROTECTION_DATA = {
