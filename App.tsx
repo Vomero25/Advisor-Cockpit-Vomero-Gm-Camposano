@@ -34,6 +34,9 @@ import RitaSimulatorView from './components/RitaSimulatorView';
 import ExtraDeductibilityView from './components/ExtraDeductibilityView';
 import SpazioPrevidenzaView from './components/SpazioPrevidenzaView';
 import ZurichSmartProtectionView from './components/ZurichSmartProtectionView';
+import FiscalArbitrageView from './components/FiscalArbitrageView';
+import RegulationsFondiView from './components/RegulationsFondiView';
+import PensionCoefficientsView from './components/PensionCoefficientsView';
 import { PageView } from './types';
 import { Menu } from 'lucide-react';
 
@@ -69,6 +72,8 @@ const App: React.FC = () => {
         return <BenefitsView type="COMPANY" onChangeView={setCurrentView} />;
       case PageView.SIMULATOR:
         return <SimulatorView />;
+      case PageView.COEFFICIENTS_EVOLUTION:
+        return <PensionCoefficientsView />;
       case PageView.RITA_SIMULATOR:
         return <RitaSimulatorView />;
       case PageView.PAC_SIMULATOR:
@@ -109,6 +114,10 @@ const App: React.FC = () => {
         return <SpazioPrevidenzaView />;
       case PageView.ZURICH_SMART_PROTECTION:
         return <ZurichSmartProtectionView />;
+      case PageView.FISCAL_ARBITRAGE:
+        return <FiscalArbitrageView />;
+      case PageView.REGULATIONS_FONDI:
+        return <RegulationsFondiView />;
       default:
         return <Dashboard onChangeView={setCurrentView} />;
     }

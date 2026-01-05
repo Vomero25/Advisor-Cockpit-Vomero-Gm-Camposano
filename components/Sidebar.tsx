@@ -8,7 +8,7 @@ import {
   Layers, Lock, Repeat, Target, Landmark, Eye, BarChart3, ShieldCheck,
   Search, Crown, Banknote, History, AlertOctagon, GraduationCap, ArrowLeftRight,
   Globe2, Brain, Ghost, LifeBuoy, TrendingDown, Map, Sparkles, LineChart, Shield,
-  Settings2, Binary, Timer, Sparkle, ArrowUpRight, Gavel
+  Settings2, Binary, Timer, Sparkle, ArrowUpRight, Gavel, LineChart as ChartIcon
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -46,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, se
         { view: PageView.VANTAGGI_LAVORATORI, label: 'Vantaggi Lavoratore', icon: Eye },
         { view: PageView.EXTRA_DEDUCTIBILITY, label: 'Extra Deducibilità', icon: Sparkle },
         { view: PageView.SIMULATOR, label: 'TFR vs Fondo', icon: Calculator },
+        { view: PageView.COEFFICIENTS_EVOLUTION, label: 'Evoluzione Coefficienti', icon: ChartIcon },
         { view: PageView.RITA_SIMULATOR, label: 'Simulatore R.I.T.A.', icon: Timer },
       ]
     },

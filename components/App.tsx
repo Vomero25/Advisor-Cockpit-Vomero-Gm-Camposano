@@ -36,6 +36,7 @@ import SpazioPrevidenzaView from './SpazioPrevidenzaView';
 import ZurichSmartProtectionView from './ZurichSmartProtectionView';
 import FiscalArbitrageView from './FiscalArbitrageView';
 import RegulationsFondiView from './RegulationsFondiView';
+import PensionCoefficientsView from './PensionCoefficientsView';
 import { PageView } from '../types';
 import { Menu } from 'lucide-react';
 
@@ -115,6 +116,8 @@ const App: React.FC = () => {
         return <FiscalArbitrageView />;
       case PageView.REGULATIONS_FONDI:
         return <RegulationsFondiView />;
+      case PageView.COEFFICIENTS_EVOLUTION:
+        return <PensionCoefficientsView />;
       default:
         return <Dashboard onChangeView={setCurrentView} />;
     }

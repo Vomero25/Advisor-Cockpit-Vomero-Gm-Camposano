@@ -1,364 +1,302 @@
 
 import React, { useState, useMemo } from 'react';
-import { PENSION_COEFFICIENTS, ZURICH_PRODUCT_DATA, ANIMA_PRODUCT_DATA } from '../constants';
 import { 
-  Calculator, TrendingUp, History, ShieldAlert, Target, Zap, 
-  ArrowRight, CheckCircle2, BookOpen, Info, TrendingDown,
-  ChevronRight, Activity, Percent, Banknote, Scale, ShieldCheck,
-  UserPlus, HandCoins, AlertCircle, Rocket, Shield, BarChart3,
-  Calendar, Clock, Gavel, AlertTriangle, ArrowDown, Landmark,
-  TrendingUp as TrendUpIcon, MoveDown
+  Calculator, TrendingUp, ShieldAlert, Target, Zap, 
+  ArrowRight, CheckCircle2, Info, TrendingDown,
+  Activity, Percent, Banknote, Scale, ShieldCheck,
+  Handshake, AlertCircle, Rocket, Shield, BarChart3,
+  Calendar, Clock, Gavel, Landmark, 
+  ChevronRight, ArrowDownToLine, Lock, UserCheck,
+  Siren, Flame, MinusCircle, PlusCircle, Quote,
+  ShieldPlus, FileSignature, AlertOctagon, Skull
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line } from 'recharts';
 
 const formatCurrency = (val: number) => 
   new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
 
 const SimulatorView: React.FC = () => {
-  // --- STATI INPUT ---
+  // --- PARAMETRI DI INPUT ---
   const [ral, setRal] = useState<number>(35000); 
+  const [currentSavings, setCurrentSavings] = useState<number>(15000); // TFR già maturato
   const [years, setYears] = useState<number>(25);
-  const [inflationRate, setInflationRate] = useState<number>(2.0); 
-  const [employerContribRate, setEmployerContribRate] = useState<number>(1.5);
-  const [selectedFundId, setSelectedFundId] = useState<string>('Z_AZIONARIO');
-  const [pensionPot, setPensionPot] = useState<number>(300000);
+  const [inflationRate, setInflationRate] = useState<number>(2.5); 
+  const [employerContribPct, setEmployerContribPct] = useState<number>(1.5);
+  const [selectedProduct, setSelectedProduct] = useState<'ZURICH' | 'ANIMA'>('ZURICH');
+  
+  // --- RENDIMENTI CERTIFICATI (Media 10Y COVIP 2024) ---
+  const CERTIFIED_RETURNS = {
+    ZURICH: 0.0643, // Zurich Pension ESG Azionario: 6,43%
+    ANIMA: 0.0600,  // Anima Arti & Mestieri Crescita 25+: 6,00%
+  };
 
-  const allFunds = useMemo(() => {
-    const list: any[] = [];
-    ZURICH_PRODUCT_DATA.FUNDS_DETAILS.forEach(f => {
-      list.push({ ...f, provider: 'ZURICH', perf: parseFloat(f.returns.y10.replace(',', '.').replace('%', '')) / 100 });
-    });
-    ANIMA_PRODUCT_DATA.FUNDS_DETAILS.forEach(f => {
-      list.push({ ...f, provider: 'ANIMA', perf: parseFloat(f.returns.y10.replace(',', '.').replace('%', '')) / 100 });
-    });
-    return list;
-  }, []);
-
-  const currentFund = allFunds.find(f => f.id === selectedFundId) || allFunds[0];
-
-  // --- MOTORE TFR VS FONDO ---
+  // --- MOTORE DI CALCOLO CERTIFICATO ---
   const projectionData = useMemo(() => {
-    let capAziendaLordo = 0;
-    let capFondoLordo = 0;
+    let companyTfrLordo = currentSavings;
+    let fundTfrLordo = currentSavings;
     const data = [];
+    
     const annualTfrAccrual = ral / 13.5;
-    const annualEmployerContrib = ral * (employerContribRate / 100);
-    const tfrRevalRateNetta = (0.015 + (0.75 * (inflationRate / 100))) * (1 - 0.17);
-    const fundNetRate = currentFund.perf * (1 - 0.20);
+    const annualEmployerGift = ral * (employerContribPct / 100);
+    
+    // Tassazione Media TFR in Azienda (Aliquota media IRPEF stimata)
+    const taxRateAzienda = 0.25;
 
-    for (let i = 1; i <= years; i++) {
-      capAziendaLordo = (capAziendaLordo * (1 + tfrRevalRateNetta)) + annualTfrAccrual;
-      capFondoLordo = (capFondoLordo * (1 + fundNetRate)) + annualTfrAccrual + annualEmployerContrib;
-      const nettoAzienda = capAziendaLordo * 0.77;
-      const extraYears = Math.max(0, i - 15);
-      const taxRateFondo = Math.max(0.09, 0.15 - (extraYears * 0.003));
-      const nettoFondo = capFondoLordo * (1 - taxRateFondo);
-      data.push({ year: `An. ${i}`, azienda: Math.round(nettoAzienda), fondo: Math.round(nettoFondo), gap: Math.round(nettoFondo - nettoAzienda) });
+    for (let i = 0; i <= years; i++) {
+      // 1. CALCOLO TFR IN AZIENDA (L. 297/82)
+      // Rivalutazione: 1.5% + 75% Inflazione
+      const tfrRevalRate = 0.015 + (0.75 * (inflationRate / 100));
+      if (i > 0) {
+        companyTfrLordo = (companyTfrLordo * (1 + tfrRevalRate)) + annualTfrAccrual;
+      }
+      const nettoAzienda = companyTfrLordo * (1 - taxRateAzienda);
+
+      // 2. CALCOLO FONDO PENSIONE (RENDIMENTO NETTO SOSTITUTIVA)
+      const grossReturn = selectedProduct === 'ZURICH' ? CERTIFIED_RETURNS.ZURICH : CERTIFIED_RETURNS.ANIMA;
+      // Imposta sostitutiva sui rendimenti (20% fisso, 12.5% su Titoli di Stato - usiamo media 18%)
+      const netReturnFactor = grossReturn * (1 - 0.18); 
+      
+      if (i > 0) {
+        fundTfrLordo = (fundTfrLordo * (1 + netReturnFactor)) + annualTfrAccrual + annualEmployerGift;
+      }
+      
+      // Tassazione Agevolata Uscita: 15% -> 9% (scende 0.3% ogni anno dopo il 15esimo)
+      const seniorityBonus = Math.max(0, i - 15);
+      const taxRateFondo = Math.max(0.09, 0.15 - (seniorityBonus * 0.003));
+      const nettoFondo = fundTfrLordo * (1 - taxRateFondo);
+
+      data.push({
+        year: `An. ${i}`,
+        azienda: Math.round(nettoAzienda),
+        fondo: Math.round(nettoFondo),
+        gap: Math.round(nettoFondo - nettoAzienda)
+      });
     }
     return data;
-  }, [ral, currentFund, years, inflationRate, employerContribRate]);
+  }, [ral, currentSavings, years, inflationRate, employerContribPct, selectedProduct]);
 
   const finalPoint = projectionData[projectionData.length - 1];
 
-  // --- ANALISI RENDITA 2025 VS 1996 ---
-  const currentAnnuityStats = useMemo(() => {
-    const coeff67_2025 = PENSION_COEFFICIENTS.COMPARISON_AGES.find(c => c.age === 67)?.val2025 || 5.723;
-    const coeff67_1996 = PENSION_COEFFICIENTS.COMPARISON_AGES.find(c => c.age === 67)?.val1996 || 6.612;
-    
-    const monthly2025 = (pensionPot * (coeff67_2025 / 100)) / 13;
-    const monthly1996 = (pensionPot * (coeff67_1996 / 100)) / 13;
-    
-    return {
-      monthly2025,
-      monthly1996,
-      loss: monthly2025 - monthly1996,
-      coeffUsed: coeff67_2025
-    };
-  }, [pensionPot]);
-
-  // --- DATI GRAFICO CRONISTORIA INTERATTIVO ---
-  const interactiveHistoryData = useMemo(() => {
-    const startValue = PENSION_COEFFICIENTS.HISTORY_AGE_65[0].value;
-    return PENSION_COEFFICIENTS.HISTORY_AGE_65.map(d => {
-      const monthly = (pensionPot * (d.value / 100)) / 13;
-      const lossVsPeak = ((startValue - d.value) / startValue) * 100;
-      return {
-        ...d,
-        rendita: Math.round(monthly),
-        lossPct: lossVsPeak.toFixed(1),
-        coeff: d.value.toFixed(3)
-      };
-    });
-  }, [pensionPot]);
-
-  const ageLossData = useMemo(() => {
-    return PENSION_COEFFICIENTS.COMPARISON_AGES.map(row => {
-      const ann1996 = (pensionPot * (row.val1996 / 100)) / 13;
-      const ann2025 = (pensionPot * (row.val2025 / 100)) / 13;
-      const monthlyLoss = ann2025 - ann1996;
-      const percentLoss = ((ann2025 / ann1996 - 1) * 100).toFixed(1);
-      return { ...row, ann1996, ann2025, monthlyLoss, percentLoss };
-    });
-  }, [pensionPot]);
-
   return (
-    <div className="max-w-7xl mx-auto space-y-16 animate-fade-in pb-24">
+    <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-24">
       
-      {/* 1. SEZIONE TFR VS FONDO */}
-      <section className="space-y-8">
-        <div className="bg-[#0f172a] rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden border-b-8 border-indigo-600">
-          <div className="relative z-10 grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7 space-y-6">
+      {/* HERO - IL DILEMMA DEL TFR */}
+      <div className="bg-[#0a0f1d] rounded-[3.5rem] p-12 text-white shadow-2xl relative overflow-hidden border-b-8 border-indigo-600">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-indigo-600/10 to-transparent"></div>
+        <div className="relative z-10 grid lg:grid-cols-12 gap-12 items-center">
+           <div className="lg:col-span-8 space-y-6">
               <div className="flex items-center gap-3">
-                <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg"><Calculator size={28}/></div>
-                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-indigo-400 italic">Audit Gruppo Vomero | Benchmark COVIP Certificati</span>
+                 <div className="bg-indigo-600 p-3 rounded-2xl shadow-xl shadow-indigo-600/20"><Scale size={32} /></div>
+                 <span className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-400 italic">Audit TFR Certificato - Gruppo Vomero Strategy</span>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">TFR: <span className="text-rose-500">Debito</span> vs <span className="text-emerald-400">Patrimonio</span></h2>
-              <p className="text-slate-400 text-xl font-medium max-w-xl">Simulazione del comparto <strong>{currentFund.name}</strong> vs TFR in azienda, inclusa efficienza fiscale 9-15% e contributi datoriali.</p>
-            </div>
-            <div className="lg:col-span-5 bg-white/5 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 text-center relative">
-              <p className="text-[11px] font-black uppercase text-indigo-300 mb-2 tracking-widest">Capitale Netto Extra</p>
-              <p className="text-7xl font-black text-emerald-400 tracking-tighter">+{formatCurrency(finalPoint.gap)}</p>
-              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase italic">
-                <ShieldCheck size={14} className="text-emerald-500" /> Rendimento Netto Storico: {currentFund.returns.y10}
-              </div>
-            </div>
-          </div>
+              <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none">
+                Risparmio o <br/> <span className="text-indigo-400">Proprietà?</span>
+              </h1>
+              <p className="text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
+                "Dottore, il TFR in azienda è un **debito chirografario** di un privato. Nel fondo è la sua **Proprietà Privata Blindata** che cresce con i rendimenti di mercato."
+              </p>
+           </div>
+           <div className="lg:col-span-4 bg-white/5 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/10 text-center">
+              <p className="text-[10px] font-black uppercase text-amber-500 mb-2 tracking-widest italic">Wealth Gap Netto</p>
+              <p className="text-6xl font-black text-emerald-400 tracking-tighter">+{formatCurrency(finalPoint.gap)}</p>
+              <p className="text-[10px] font-black text-indigo-300 uppercase mt-4 tracking-widest italic">Capitale extra creato nel Fondo</p>
+           </div>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm space-y-8">
-               <div className="space-y-6">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Activity size={14} className="text-indigo-600"/> Parametri Diagnosi</h4>
-                  <div className="space-y-4">
-                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-500 mb-1 uppercase">RAL Lorda (€)</p>
-                        <input type="number" value={ral} onChange={(e) => setRal(Number(e.target.value))} className="w-full bg-transparent font-black text-2xl outline-none text-slate-900" />
-                     </div>
-                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-500 mb-1 uppercase">Orizzonte: {years} anni</p>
-                        <input type="range" min="1" max="40" value={years} onChange={(e) => setYears(Number(e.target.value))} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-indigo-600" />
-                     </div>
-                  </div>
-               </div>
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Target size={14} className="text-indigo-600"/> Selezione Comparto</h4>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                    {allFunds.map(f => (
-                      <button key={f.id} onClick={() => setSelectedFundId(f.id)} className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${selectedFundId === f.id ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-slate-100 hover:bg-slate-50'}`}>
-                        <div className="flex justify-between items-center">
-                           <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase ${f.provider === 'ZURICH' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>{f.provider}</span>
-                           <span className="text-[9px] font-black text-slate-400 uppercase">ISC: {f.cost}</span>
-                        </div>
-                        <h4 className="font-black text-xs text-slate-700 mt-2 uppercase truncate">{f.name}</h4>
+      <div className="grid lg:grid-cols-12 gap-8">
+        
+        {/* SIDEBAR PARAMETRI CERTIFICATI */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm space-y-8">
+             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <Calculator size={14} className="text-indigo-600" /> Driver di Calcolo
+             </h4>
+             
+             <div className="space-y-6">
+                <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                   <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">RAL Lorda Annua (€)</label>
+                   <input type="number" value={ral} onChange={(e) => setRal(Number(e.target.value))} className="w-full bg-transparent font-black text-3xl outline-none text-slate-900" />
+                   <p className="text-[9px] text-slate-400 mt-1 italic uppercase">Accantonamento TFR annuo: {formatCurrency(ral/13.5)}</p>
+                </div>
+
+                <div className="space-y-3">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Comparto Certificato (Azionario)</label>
+                   <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => setSelectedProduct('ZURICH')} className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${selectedProduct === 'ZURICH' ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-slate-100 hover:bg-slate-50'}`}>
+                         <span className="text-[10px] font-black uppercase text-indigo-900 leading-tight">Zurich Spazio <br/>(Azionario ESG)</span>
+                         <span className="text-[12px] font-black text-indigo-600">6,43%</span>
                       </button>
-                    ))}
-                  </div>
-               </div>
-            </div>
+                      <button onClick={() => setSelectedProduct('ANIMA')} className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${selectedProduct === 'ANIMA' ? 'border-red-600 bg-red-50 shadow-md' : 'border-slate-100 hover:bg-slate-50'}`}>
+                         <span className="text-[10px] font-black uppercase text-red-900 leading-tight">Anima Arti <br/>(Crescita 25+)</span>
+                         <span className="text-[12px] font-black text-red-600">6,00%</span>
+                      </button>
+                   </div>
+                </div>
+
+                <div className="bg-amber-50 p-5 rounded-3xl border border-amber-100">
+                   <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-black text-amber-700 uppercase italic">Inflazione Target ({inflationRate}%)</label>
+                   </div>
+                   <input type="range" min="0" max="6" step="0.5" value={inflationRate} onChange={(e) => setInflationRate(Number(e.target.value))} className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none accent-amber-600" />
+                   <p className="text-[9px] text-amber-600 font-bold mt-2 italic uppercase">Rivalutazione TFR L. 297/82: {(0.015 + 0.75 * (inflationRate/100) * 100).toFixed(2)}%</p>
+                </div>
+
+                <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100">
+                   <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-black text-emerald-700 uppercase italic">Aumento CCNL ({employerContribPct}%)</label>
+                   </div>
+                   <input type="range" min="1" max="3" step="0.1" value={employerContribPct} onChange={(e) => setEmployerContribPct(Number(e.target.value))} className="w-full h-1.5 bg-emerald-200 rounded-lg appearance-none accent-emerald-600" />
+                   <p className="text-[9px] text-emerald-600 font-bold uppercase mt-2 italic">Contributo Datoriale: {formatCurrency(ral * (employerContribPct/100))}</p>
+                </div>
+             </div>
           </div>
 
-          <div className="lg:col-span-8 bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col">
-             <div className="flex justify-between items-center mb-10">
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic">Analisi Proiettiva Capitale Netto</h3>
-             </div>
-             <div className="flex-1 min-h-[450px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={projectionData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
-                    <YAxis tickFormatter={(v) => `€${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} tick={{fontSize: 10}} />
-                    <Tooltip contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'}} />
-                    <Area type="monotone" dataKey="fondo" stroke="#10b981" strokeWidth={5} fill="#10b981" fillOpacity={0.1} name="Netto Fondo" />
-                    <Area type="monotone" dataKey="azienda" stroke="#6366f1" strokeWidth={3} fill="none" name="Netto Azienda" />
-                  </AreaChart>
-                </ResponsiveContainer>
-             </div>
+          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group border-b-8 border-emerald-500">
+             <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 transition-transform"><ShieldCheck size={200} /></div>
+             <h4 className="text-emerald-400 text-[10px] font-black uppercase mb-4 tracking-widest italic flex items-center gap-2"><Lock size={14}/> Scudo Legale Art. 1923</h4>
+             <p className="text-sm text-slate-300 leading-relaxed font-medium italic">
+                "Dottore, il TFR in azienda è pignorabile. Nel fondo è **impignorabile** e **insequestrabile** per legge. Non stiamo solo investendo, stiamo blindando il capitale dai creditori."
+              </p>
           </div>
         </div>
-      </section>
 
-      {/* 2. FOCUS DECLINO RENDITA STATALE (POTENZIATA ED INTERATTIVA) */}
-      <section className="space-y-12 pt-16 border-t-2 border-slate-100">
-        <div className="bg-slate-950 rounded-[3.5rem] p-12 text-white shadow-2xl relative overflow-hidden border-b-8 border-rose-600">
-           <div className="relative z-10 grid lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-7 space-y-6">
-                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-500/20 rounded-full border border-rose-500/30 text-rose-400 text-[10px] font-black uppercase tracking-widest">
-                    <ShieldAlert size={14} /> Alert Coefficienti 2025 (D.M. 19/12/2022)
+        {/* GRAFICO WEALTH GAP */}
+        <div className="lg:col-span-8 space-y-8">
+           
+           <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col relative overflow-hidden h-[550px]">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 relative z-10">
+                 <div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Wealth Accumulation Gap</h3>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-2">Dati Certificati Netti (COVIP + L. 297/82)</p>
                  </div>
-                 <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">Il Declino della <br/> <span className="text-rose-500 underline decoration-8 underline-offset-8">Rendita Pubblica</span></h2>
-                 <p className="text-slate-400 text-xl font-medium leading-relaxed max-w-xl">
-                    "Dottore, osserva come lo stesso montante genera oggi una rendita inferiore del 13% rispetto al passato. Lo Stato riduce la velocità di restituzione dei tuoi soldi."
+                 <div className="flex gap-4 text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2 text-indigo-600"><div className="w-2.5 h-2.5 bg-indigo-600 rounded-full"></div> Fondo Pensione Netto</div>
+                    <div className="flex items-center gap-2 text-slate-400"><div className="w-2.5 h-2.5 bg-slate-400 rounded-full"></div> TFR Azienda Netto</div>
+                 </div>
+              </div>
+
+              <div className="flex-1 min-h-[400px]">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={projectionData}>
+                       <defs>
+                          <linearGradient id="colorFondo" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                             <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                          </linearGradient>
+                       </defs>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                       <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
+                       <YAxis tickFormatter={(v) => `€${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} tick={{fontSize: 10}} />
+                       <Tooltip 
+                         contentStyle={{borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'}} 
+                         formatter={(val: number) => formatCurrency(val)}
+                       />
+                       <Area type="monotone" dataKey="fondo" stroke="#6366f1" strokeWidth={5} fill="url(#colorFondo)" name="Capitale Netto Fondo" />
+                       <Area type="monotone" dataKey="azienda" stroke="#94a3b8" strokeWidth={2} fill="none" name="Capitale Netto Azienda" strokeDasharray="5 5" />
+                    </AreaChart>
+                 </ResponsiveContainer>
+              </div>
+
+              <div className="mt-8 p-6 bg-indigo-50 rounded-3xl border border-indigo-100 flex items-center justify-between">
+                 <div className="flex items-center gap-4">
+                    <div className="bg-indigo-600 p-3 rounded-2xl text-white shadow-lg"><Zap size={24}/></div>
+                    <div>
+                       <p className="text-xs font-black text-indigo-900 uppercase tracking-tighter">Arbitraggio Fiscale & Mercato</p>
+                       <p className="text-[11px] text-indigo-700 font-bold italic">La combinazione di rendimenti azionari e tassazione al 9% genera un plusvalore di <strong>{formatCurrency(finalPoint.gap)}</strong>.</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           {/* AUDIT DEI RISCHI: CHIROGRAFARIO VS PROPRIETÀ */}
+           <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm space-y-6 group">
+                 <div className="flex items-center gap-3">
+                    <div className="p-3 bg-rose-50 rounded-2xl text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-all"><Siren size={24} /></div>
+                    <h4 className="text-xl font-black text-slate-900 uppercase italic">TFR in Azienda (Rischi Legali)</h4>
+                 </div>
+                 <ul className="space-y-4">
+                    <li className="flex gap-4">
+                       <AlertOctagon size={18} className="text-rose-400 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Credito Chirografario (Art. 2776 c.c.)</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">In caso di fallimento aziendale, lei è un creditore semplice. Se l'azienda non ha liquidità, il suo TFR sparisce.</p>
+                       </div>
+                    </li>
+                    <li className="flex gap-4">
+                       <AlertOctagon size={18} className="text-rose-400 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Pieno Rischio Impresa</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">Il suo capitale è investito al 100% nel 'business' del suo datore di lavoro. Zero diversificazione.</p>
+                       </div>
+                    </li>
+                    <li className="flex gap-4">
+                       <AlertOctagon size={18} className="text-rose-400 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Pignorabilità Totale</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">Il credito TFR può essere pignorato da terzi creditori in qualsiasi momento (es. banche, fisco).</p>
+                       </div>
+                    </li>
+                 </ul>
+              </div>
+
+              <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm space-y-6 group">
+                 <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all"><ShieldPlus size={24} /></div>
+                    <h4 className="text-xl font-black text-slate-900 uppercase italic">Fondo Pensione (Certificazioni)</h4>
+                 </div>
+                 <ul className="space-y-4">
+                    <li className="flex gap-4">
+                       <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Patrimonio Segregato (Art. 2117 c.c.)</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">Il capitale esce dal bilancio aziendale. Anche se l'azienda fallisce, il suo fondo è intatto e suo al 100%.</p>
+                       </div>
+                    </li>
+                    <li className="flex gap-4">
+                       <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Scudo Inattaccabile (Art. 1923 c.c.)</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">Somme impignorabili e insequestrabili per legge. È l'unico asset 'invisibile' ai creditori.</p>
+                       </div>
+                    </li>
+                    <li className="flex gap-4">
+                       <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                       <div>
+                          <p className="text-xs font-black text-slate-800 uppercase">Tassazione 'Certificata' al 9%</p>
+                          <p className="text-[11px] text-slate-500 font-medium italic">L'unica via legale in Italia per tassare un reddito da capitale solo al 9% (D.Lgs 252/05).</p>
+                       </div>
+                    </li>
+                 </ul>
+              </div>
+           </div>
+
+           {/* SALES SCRIPT: LA METAFORA DEL PRESTITO */}
+           <div className="bg-slate-900 p-10 rounded-[3rem] text-white flex items-start gap-8 relative overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 p-4 opacity-5"><Quote size={200} /></div>
+              <div className="bg-amber-500 p-4 rounded-3xl text-slate-900 shadow-xl shrink-0"><Banknote size={32} /></div>
+              <div>
+                 <h4 className="text-xl font-black text-amber-500 uppercase tracking-tighter italic mb-4">Lo Script di Chiusura</h4>
+                 <p className="text-lg font-medium leading-relaxed italic opacity-90">
+                    "Signor Cliente, lasciare il TFR in azienda è come prestare i suoi risparmi a un privato senza garanzie e con un interesse misero. Metterlo nel fondo significa metterlo in una cassaforte svizzera di cui solo lei ha la chiave, con un rendimento triplo e tasse dimezzate. Quale banconota preferisce avere tra 20 anni?"
                  </p>
               </div>
-              <div className="lg:col-span-5 space-y-6">
-                 {/* CALCOLATORE RENDITA DINAMICO */}
-                 <div className="bg-white/5 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/10 text-center relative overflow-hidden group shadow-2xl">
-                    <div className="absolute -bottom-10 -left-10 opacity-5 rotate-12 group-hover:rotate-0 transition-transform"><Banknote size={200} /></div>
-                    <p className="text-[11px] font-black uppercase text-indigo-300 mb-4 tracking-widest italic">Montante per lo Stress Test (€)</p>
-                    <input 
-                      type="number" 
-                      value={pensionPot} 
-                      onChange={(e) => setPensionPot(Number(e.target.value))} 
-                      className="bg-transparent text-6xl font-black text-white text-center outline-none w-full border-b-2 border-white/20 pb-4 mb-8 transition-colors focus:border-amber-500" 
-                    />
-                    
-                    {/* BOX RISULTATO RENDITA OGGI */}
-                    <div className="p-8 bg-indigo-600 rounded-3xl shadow-2xl transform hover:scale-105 transition-all">
-                       <p className="text-[10px] font-black uppercase text-indigo-200 mb-2 tracking-[0.2em]">Rendita Mensile Lorda OGGI</p>
-                       <p className="text-5xl font-black text-white tracking-tighter">{formatCurrency(currentAnnuityStats.monthly2025)}</p>
-                       <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-bold text-indigo-100">
-                          <span className="uppercase">Coefficiente 2025:</span>
-                          <span className="bg-white/20 px-2 py-0.5 rounded">{currentAnnuityStats.coeffUsed.toFixed(3)}%</span>
-                       </div>
-                    </div>
-
-                    <div className="mt-6 flex items-center justify-center gap-2 text-rose-400 font-black text-[10px] uppercase tracking-widest">
-                       <TrendingDown size={14} /> Perdita Mensile vs 1996: {formatCurrency(Math.abs(currentAnnuityStats.loss))}
-                    </div>
-                 </div>
-              </div>
            </div>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-12 gap-8">
-           {/* GRAFICO CRONISTORIA INTERATTIVO */}
-           <div className="lg:col-span-8 bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm h-[550px] flex flex-col relative overflow-hidden group">
-              <div className="flex justify-between items-start mb-10">
-                 <div>
-                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic flex items-center gap-3 italic leading-none"><History className="text-rose-600" /> Cronistoria Rendite Mensili</h3>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-2">Valore stimato a parità di montante ({formatCurrency(pensionPot)})</p>
-                 </div>
-                 <div className="flex gap-4">
-                    <div className="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-black text-slate-400 border border-slate-100 uppercase italic">
-                       Basato su Età 65
-                    </div>
-                 </div>
-              </div>
-              
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                   <AreaChart data={interactiveHistoryData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                      <defs>
-                         <linearGradient id="gradRed" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/><stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis 
-                        dataKey="period" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{fontSize: 10, fontWeight: '900', fill: '#475569'}} 
-                      />
-                      <YAxis 
-                        domain={['auto', 'auto']} 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{fontSize: 10}}
-                        tickFormatter={(v) => `€${v}`}
-                      />
-                      <Tooltip 
-                        content={({ active, payload }) => {
-                           if (active && payload && payload.length) {
-                              const data = payload[0].payload;
-                              return (
-                                 <div className="bg-slate-900 text-white p-5 rounded-[2rem] shadow-2xl border border-white/10 animate-fade-in">
-                                    <p className="text-[10px] font-black text-amber-500 uppercase mb-2 tracking-widest">{data.period}</p>
-                                    <p className="text-2xl font-black italic">{formatCurrency(data.rendita)} <span className="text-[10px] opacity-50 not-italic">/mese</span></p>
-                                    <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
-                                       <p className="text-[9px] font-bold text-slate-400 uppercase">Coefficiente: {data.coeff}%</p>
-                                       {data.lossPct !== "0.0" && (
-                                          <p className="text-[9px] font-black text-rose-500 uppercase">Perdita vs Picco: -{data.lossPct}%</p>
-                                       )}
-                                    </div>
-                                 </div>
-                              );
-                           }
-                           return null;
-                        }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="rendita" 
-                        stroke="#f43f5e" 
-                        strokeWidth={6} 
-                        fill="url(#gradRed)" 
-                        dot={{ r: 8, fill: '#f43f5e', stroke: '#fff', strokeWidth: 3 }} 
-                        /* Fix: Removed invalid 'shadow' property from activeDot */
-                        activeDot={{ r: 12, fill: '#f43f5e', stroke: '#fff', strokeWidth: 4 }}
-                      />
-                      {/* LINEE DI RIFERIMENTO FISSE */}
-                      <ReferenceLine 
-                        y={interactiveHistoryData[0].rendita} 
-                        stroke="#94a3b8" 
-                        strokeDasharray="10 5" 
-                        label={{ position: 'top', value: 'REGIME DINI (MAX)', fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} 
-                      />
-                   </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              
-              <div className="mt-8 flex items-center justify-between p-6 bg-rose-50 rounded-3xl border border-rose-100">
-                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-rose-500 rounded-2xl text-white shadow-lg"><MoveDown size={24} /></div>
-                    <div>
-                       <p className="text-xs font-black text-rose-900 uppercase">Velocità di Restituzione</p>
-                       <p className="text-[11px] text-rose-700 font-bold italic">Lo Stato sta progressivamente riducendo la rendita per contrastare l'aumento della longevità.</p>
-                    </div>
-                 </div>
-                 <div className="text-right">
-                    <p className="text-2xl font-black text-rose-600 tracking-tighter">-{interactiveHistoryData[interactiveHistoryData.length-1].lossPct}%</p>
-                    <p className="text-[9px] font-black text-rose-400 uppercase">Gap Storico</p>
-                 </div>
-              </div>
-           </div>
-
-           <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm relative overflow-hidden h-full flex flex-col">
-                 <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-2 mb-8">
-                    <ArrowDown size={14} /> Bench. Rendita per Età
-                 </h4>
-                 <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                    {ageLossData.map((row) => (
-                       <div key={row.age} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-rose-200 transition-all">
-                          <div className="flex justify-between items-center mb-3">
-                             <div className="flex items-center gap-2">
-                                <span className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">{row.age}</span>
-                                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tighter">{row.label}</span>
-                             </div>
-                             <span className="text-xs font-black text-rose-600">{row.percentLoss}%</span>
-                          </div>
-                          <div className="flex justify-between items-end">
-                             <div>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase">Rendita Oggi</p>
-                                <p className="text-xl font-black text-slate-900">{formatCurrency(row.ann2025)}</p>
-                             </div>
-                             <div className="text-right">
-                                <p className="text-[9px] text-slate-400 font-bold uppercase">Coeff. 2025</p>
-                                <p className="text-sm font-black text-indigo-600">{row.val2025.toFixed(3)}%</p>
-                             </div>
-                          </div>
-                       </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* FOOTER AUDIT */}
+      {/* FOOTER METODOLOGICO */}
       <div className="bg-white p-10 rounded-[3rem] border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
          <div className="flex items-center gap-6">
-            <div className="bg-[#0f172a] p-4 rounded-[1.5rem] text-white shadow-lg"><Info size={32} /></div>
+            <div className="bg-[#0f172a] p-4 rounded-[1.5rem] text-white shadow-lg"><FileSignature size={32} /></div>
             <div>
-               <p className="text-lg font-black text-slate-800 uppercase tracking-tighter leading-none mb-1">Rapporto Certificato sulla Rendita Statale</p>
-               <p className="text-xs text-slate-500 font-bold italic">Fonti: ISTAT (Tavole di Mortalità) | MEF | INPS (Coefficienti di Trasformazione 1996-2025)</p>
+               <p className="text-lg font-black text-slate-800 uppercase tracking-tighter leading-none mb-1">TFR Strategy Analytics 2025</p>
+               <p className="text-xs text-slate-500 font-bold italic">Rif: Art. 2117 c.c. | L. 297/82 | Serie Storica Zurich ESG (6,43%) - Anima (6,00%) | Revisione Gruppo Vomero</p>
             </div>
          </div>
-         <div className="text-right">
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic leading-none">Market Intelligence Unit - Gruppo Vomero</p>
-         </div>
       </div>
+
     </div>
   );
 };

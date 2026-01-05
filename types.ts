@@ -38,10 +38,9 @@ export enum PageView {
   NORMATIVA = 'NORMATIVA',
   EXTRA_DEDUCTIBILITY = 'EXTRA_DEDUCTIBILITY',
   ZURICH_SPAZIO_PREVIDENZA = 'ZURICH_SPAZIO_PREVIDENZA',
-  /* Added to fix error: Property 'FISCAL_ARBITRAGE' does not exist on type 'typeof PageView' */
   FISCAL_ARBITRAGE = 'FISCAL_ARBITRAGE',
-  /* Added to fix error: Property 'REGULATIONS_FONDI' does not exist on type 'typeof PageView' */
-  REGULATIONS_FONDI = 'REGULATIONS_FONDI'
+  REGULATIONS_FONDI = 'REGULATIONS_FONDI',
+  COEFFICIENTS_EVOLUTION = 'COEFFICIENTS_EVOLUTION'
 }
 
 export interface CovipProduct {
@@ -62,6 +61,10 @@ export interface HistoricalDataPoint {
   tfrRate: number;
   ftseMib: number;
   jpmGlobal: number;
+  jpmIta35: number;
+  jpmIta57: number;
+  jpmIta10: number;
+  msciWorldEur: number;
   event: string;
 }
 
@@ -89,6 +92,13 @@ export interface BenefitItem {
   description: string;
   icon: string;
   highlight?: string;
+}
+
+// Add TaxRateInfo interface
+export interface TaxRateInfo {
+  label: string;
+  rate: number;
+  exemption: number;
 }
 
 declare global {
